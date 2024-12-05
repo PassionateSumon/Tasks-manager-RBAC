@@ -1,0 +1,24 @@
+# Logs
+logs
+*.log
+
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+
+# Environment variables
+.env
+
+# Build directories
+dist/
+build/
+
+# IDE/Editor files
+.vscode/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
