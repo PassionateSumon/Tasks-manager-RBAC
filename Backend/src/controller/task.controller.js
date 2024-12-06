@@ -1,7 +1,7 @@
 const apiErrorHandler = require("../utils/apiErrorHandler.util");
 const apiResponseHandler = require("../utils/apiResponseHandler.util");
 const Task = require("../models/task.model");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 exports.createTask = async (req, res) => {
   try {
@@ -48,7 +48,7 @@ exports.createTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const userId = req?.user?.id;
-    const requestedTaskId = req?.params?.id;
+    const requestedTaskId = req?.params?.t_id;
     const role = req?.role;
     const { title, description, status } = req?.body;
     if (!userId) {
@@ -94,7 +94,7 @@ exports.updateTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const userId = req?.user?.id;
-    const requestedTaskId = req?.params?.id;
+    const requestedTaskId = req?.params?.t_id;
     const role = req?.role;
     if (!userId) {
       return res
@@ -142,7 +142,7 @@ exports.deleteTask = async (req, res) => {
 exports.getSingleTask = async (req, res) => {
   try {
     const userId = req?.user?.id;
-    const requestedTaskId = req?.params?.id;
+    const requestedTaskId = req?.params?.t_id;
     const role = req?.role;
     if (!userId) {
       return res
@@ -199,6 +199,152 @@ exports.getSingleTask = async (req, res) => {
 
 exports.getAllTasksByRoles = async (req, res) => {
   try {
-    
+    const adminId = req?.user?.id;
+    const aggregateRes = await User.aggregate([
+      {
+        $match: {
+          _id: adminId,
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+    ]);
+    const role = aggregateRes[0]?.role[0]?.name;
+    if (!role) {
+      return res
+        .status(403)
+        .json(new apiErrorHandler(403, "Unauthorized for getting all tasks!"));
+    }
+    let getTasksForAdmin, getTasksForModerator, getTasksForUser;
+    switch (role) {
+      case process.env.ADMIN_ROLE:
+        getTasksForAdmin = await Task.aggregate([
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    password: 0,
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "roles",
+                    localField: "role",
+                    foreignField: "_id",
+                    as: "role",
+                  },
+                },
+              ],
+            },
+          },
+        ]);
+        break;
+
+      case process.env.MODERATOR_ROLE:
+        getTasksForModerator = await Task.aggregate([
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+            },
+          },
+          {
+            $addFields: {
+              owner: { $arrayElemAt: ["$owner", 0] },
+            },
+          },
+          {
+            $lookup: {
+              from: "roles",
+              localField: "owner.role",
+              foreignField: "_id",
+              as: "role",
+            },
+          },
+          {
+            $addFields: {
+              role: { $arrayElemAt: ["$role", 0] },
+            },
+          },
+          {
+            $match: {
+              "role.name": { $ne: "admin" },
+            },
+          },
+        ]);
+        break;
+      case process.env.USER_ROLE:
+        getTasksForUser = await Task.aggregate([
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+            },
+          },
+          {
+            $addFields: {
+              owner: { $arrayElemAt: ["$owner", 0] },
+            },
+          },
+          {
+            $lookup: {
+              from: "roles",
+              localField: "owner.role",
+              foreignField: "_id",
+              as: "role",
+            },
+          },
+          {
+            $addFields: {
+              role: { $arrayElemAt: ["$role", 0] },
+            },
+          },
+          {
+            $match: {
+              $and: [
+                { "role.name": { $ne: "admin" } },
+                { "role.name": { $ne: "moderator" } },
+              ],
+            },
+          },
+        ]);
+    }
+
+    if (role === process.env.ADMIN_ROLE) {
+      return res
+        .status(200)
+        .json(
+          new apiResponseHandler(200, "Successfully get.", getTasksForAdmin)
+        );
+    }
+    if (role === process.env.MODERATOR_ROLE) {
+      return res
+        .status(200)
+        .json(
+          new apiResponseHandler(200, "Successfully get.", getTasksForModerator)
+        );
+    }
+    if (role === process.env.USER_ROLE) {
+      return res
+        .status(200)
+        .json(
+          new apiResponseHandler(200, "Successfully get.", getTasksForUser)
+        );
+    }
   } catch (error) {}
 };

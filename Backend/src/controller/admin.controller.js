@@ -291,75 +291,6 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-exports.getAllUsersProfiles = async (req, res) => {
-  const loggedInUserId = req?.user?.id;
-  if (!loggedInUserId)
-    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
-  const roleOfLoggedInUser = await User.aggregate([
-    {
-      $match: {
-        _id: loggedInUserId,
-      },
-    },
-    {
-      $lookup: {
-        from: "roles",
-        localField: "role",
-        foreignField: "_id",
-        as: "role",
-      },
-    },
-  ]);
-
-  const users = await User.aggregate([
-    {
-      $lookup: {
-        from: "roles",
-        localField: "role",
-        foreignField: "_id",
-        as: "updatedRoles",
-      },
-    },
-    {
-      $lookup: {
-        from: "permissions",
-        localField: "permissions",
-        foreignField: "_id",
-        as: "permissions",
-      },
-    },
-    {
-      $match: {
-        $expr: {
-          $and: [
-            { $gt: [{ $size: "$updatedRoles" }, 0] }, // Ensure updatedRoles[0] exists
-            { $eq: [{ $arrayElemAt: ["$updatedRoles.name", 0] }, "user"] },
-          ],
-        },
-      },
-    },
-    {
-      $project: {
-        password: 0,
-      },
-    },
-  ]);
-  if (!users)
-    return res.status(404).json(new apiErrorHandler(404, "Users not found"));
-  const roleName = roleOfLoggedInUser[0]?.role[0]?.name;
-  if (
-    roleName === process.env.ADMIN_ROLE ||
-    roleName === process.env.MODERATOR_ROLE
-  ) {
-    return res.status(200).json(new apiResponse(200, "All Users", users));
-  }
-  return res
-    .status(401)
-    .json(
-      new apiErrorHandler(401, "You don't have permission to get all users")
-    );
-};
-
 exports.getAllPermissionsByRole = async (req, res) => {
   try {
     const loggedInAdminId = req?.user?.id;
@@ -434,20 +365,6 @@ exports.getAllPermissionsByRole = async (req, res) => {
         ]);
         break;
     }
-
-    if (
-      !allRolePermissionsForAdmin ||
-      !allRolePermissionsForModerator ||
-      !allRolePermissionsForUser
-    )
-      return res
-        .status(500)
-        .json(
-          new apiErrorHandler(
-            500,
-            "Permissions not found for some unknown reason"
-          )
-        );
 
     if (roleName === process.env.ADMIN_ROLE)
       return res

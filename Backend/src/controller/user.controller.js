@@ -5,7 +5,7 @@ const User = require("../models/user.model");
 const Role = require("../models/role.model");
 const apiErrorHandler = require("../utils/apiErrorHandler.util");
 const apiResponseHandler = require("../utils/apiResponseHandler.util");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.signup = async (req, res) => {
@@ -162,8 +162,8 @@ exports.updateProfile = async (req, res) => {
     });
   } catch (error) {
     return res
-    .status(400)
-    .json(new apiErrorHandler(400, "Internal error to update user!!"));
+      .status(400)
+      .json(new apiErrorHandler(400, "Internal error to update user!!"));
   }
 };
 
@@ -288,5 +288,78 @@ exports.getUserProfile = async (req, res) => {
     return res
       .status(400)
       .json(new apiErrorHandler(400, "Internal error to get user!!"));
+  }
+};
+
+exports.getAllUsersProfiles = async (req, res) => {
+  try {
+    const loggedInUserId = req?.user?.id;
+    if (!loggedInUserId)
+      return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+    const roleOfLoggedInUser = await User.aggregate([
+      {
+        $match: {
+          _id: loggedInUserId,
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+    ]);
+
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "updatedRoles",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $gt: [{ $size: "$updatedRoles" }, 0] }, // Ensure updatedRoles[0] exists
+              { $eq: [{ $arrayElemAt: ["$updatedRoles.name", 0] }, "user"] },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
+
+    if (!users)
+      return res.status(404).json(new apiErrorHandler(404, "Users not found"));
+    const roleName = roleOfLoggedInUser[0]?.role[0]?.name;
+    if (
+      roleName === process.env.ADMIN_ROLE ||
+      roleName === process.env.MODERATOR_ROLE
+    ) {
+      return res.status(200).json(new apiResponse(200, "All Users", users));
+    }
+  } catch (error) {
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(401, "You don't have permission to get all users")
+      );
   }
 };

@@ -8,11 +8,11 @@ const {
   getUserProfile,
   getAllPermissionsByRole,
   increaseAndDecreasePersonRoleByAdmin,
-  getAllUsersProfiles,
   changePermissionsOfModeratorByAdmin,
 } = require("../controller/admin.controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 const { verifyRoleAndPermission } = require("../middleware/role.middleware");
+const { getAllUsersProfiles } = require("../controller/user.controller");
 const router = express.Router();
 
 router.post("/api/signup", asyncFuncHandler(signup));
