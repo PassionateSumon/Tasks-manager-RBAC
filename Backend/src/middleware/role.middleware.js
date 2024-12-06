@@ -11,7 +11,7 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
 
     // <------------ check loggedin person ------------>
     const currLoggedInPerson = req?.user?.id;
-    const action = req?.params?.profile_action_update;
+    const action = req?.params?.actionType;
     if (!action)
       return res.status(400).json(new apiErrorHandler(400, "Action not found"));
     const decodedActionType = action?.split("_")[0]; //profile, task, role
@@ -94,19 +94,23 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
             },
           ]);
 
-          console.log(adminPermissions[0].userPermissions);
+          // console.log(adminPermissions[0].userPermissions);
+          let flag = true;
           adminPermissions[0]?.userPermissions?.forEach((permission) => {
-            if (Object.keys(permission).includes(decodedActionType)) {
-              if (permission[decodedActionType].includes(decodedAction)) {
-                console.log("not null - 101");
-                req.role = currUserWithRole[0];
+            if (flag === true) {
+              if (Object.keys(permission).includes(decodedActionType)) {
+                if (permission[decodedActionType].includes(decodedAction)) {
+                  // console.log("not null - 101");
+                  req.role = currUserWithRole[0];
+                  flag = false;
+                } else {
+                  // console.log("null - 104");
+                  req.role = null;
+                }
               } else {
-                console.log("null - 104");
+                // console.log("null - 108");
                 req.role = null;
               }
-            } else {
-              console.log("null - 108");
-              req.role = null;
             }
           });
         }
@@ -142,12 +146,16 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
             },
           ]);
 
+          let flag = true;
           adminPermissions[0]?.userPermissions?.forEach((permission) => {
             if (Object.keys(permission).includes(decodedActionType)) {
-              if (permission[decodedActionType].includes(decodedAction)) {
-                req.role = currUserWithRole[0];
-              } else {
-                req.role = null;
+              if (flag === true) {
+                if (permission[decodedActionType].includes(decodedAction)) {
+                  req.role = currUserWithRole[0];
+                  flag = false;
+                } else {
+                  req.role = null;
+                }
               }
             } else {
               req.role = null;

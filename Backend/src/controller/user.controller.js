@@ -4,9 +4,11 @@ const { z } = require("zod");
 const User = require("../models/user.model");
 const Role = require("../models/role.model");
 const apiErrorHandler = require("../utils/apiErrorHandler.util");
+const apiResponseHandler = require("../utils/apiResponseHandler.util");
+const { default: mongoose } = require("mongoose");
 const JWT_SECRET = process.env.JWT_SECRET;
 
-exports.signup = async (req, res, next) => {
+exports.signup = async (req, res) => {
   try {
     const requiredBody = z.object({
       name: z
@@ -59,11 +61,13 @@ exports.signup = async (req, res, next) => {
       .status(200)
       .json({ user: createdUser, message: "You're signed up!" });
   } catch (error) {
-    next(error);
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "Internal error to signup user!!"));
   }
 };
 
-exports.signin = async (req, res, next) => {
+exports.signin = async (req, res) => {
   try {
     const requiredBody = z.object({
       email: z.string().email(),
@@ -101,16 +105,18 @@ exports.signin = async (req, res, next) => {
 
     return res.status(200).json({ user: existedUser, token });
   } catch (error) {
-    next(error);
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "Internal error to signin user!!"));
   }
 };
 
-exports.updateProfile = async (req, res, next) => {
+exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user?.id;
 
     const userRole = req?.role;
-    console.log(userRole);
+    // console.log(userRole);
     if (!userRole) {
       return res
         .status(403)
@@ -155,18 +161,32 @@ exports.updateProfile = async (req, res, next) => {
       message: "Profile updated successfully!",
     });
   } catch (error) {
-    next(error);
+    return res
+    .status(400)
+    .json(new apiErrorHandler(400, "Internal error to update user!!"));
   }
 };
 
-exports.deleteProfile = async (req, res, next) => {
+exports.deleteProfile = async (req, res) => {
   try {
     const userId = req?.user?.id;
     const deleteUserId = req?.params?.id;
 
+    const userRole = req?.role;
+    if (!userRole) {
+      return res
+        .status(403)
+        .json(
+          new apiErrorHandler(
+            403,
+            "You don't have permission to do delete user profile!"
+          )
+        );
+    }
+
     const user = await User?.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json(new apiErrorHandler(404, "User not found!"));
     }
 
     const userToDelete = await User?.findById(deleteUserId);
@@ -180,11 +200,93 @@ exports.deleteProfile = async (req, res, next) => {
 
     await User?.findByIdAndDelete(deleteUserId);
 
-    return res.status(200).json({
-      message: "User deleted successfully!",
-    });
+    return res
+      .status(200)
+      .json(new apiResponseHandler(200, "User deleted successfully!"));
   } catch (error) {
-    next(error);
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "Internal error to delete user!!"));
   }
 };
 
+exports.getUserProfile = async (req, res) => {
+  try {
+    const userId = req?.user?.id;
+    const getUserId = req?.params?.id;
+
+    const userRole = req?.role;
+    if (!userRole) {
+      return res
+        .status(403)
+        .json(
+          new apiErrorHandler(
+            403,
+            "You don't have permission to do get user profile!"
+          )
+        );
+    }
+
+    const user = await User?.findById(userId);
+    if (!user) {
+      return res.status(404).json(new apiErrorHandler(404, "User not found!"));
+    }
+    if (!getUserId) {
+      return res
+        .status(404)
+        .json(new apiErrorHandler(404, "User not authorize!"));
+    }
+
+    const userToGet = await User?.findById(getUserId);
+    if (!userToGet) {
+      return res.status(404).json({ message: "Not found user!" });
+    }
+
+    const allUserDetails = await User.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(getUserId),
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "roles",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
+
+    if (!allUserDetails) {
+      return res
+        .status(404)
+        .json(
+          new apiErrorHandler(404, "User is not present after aggregation!")
+        );
+    }
+
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(200, "User successfully find!", allUserDetails)
+      );
+  } catch (error) {
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "Internal error to get user!!"));
+  }
+};
