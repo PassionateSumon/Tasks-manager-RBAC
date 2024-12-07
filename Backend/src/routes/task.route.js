@@ -35,3 +35,5 @@ router.get(
   verifyToken,
   asyncFuncHandler(getAllTasksByRoles)
 );
+
+module.exports = router;

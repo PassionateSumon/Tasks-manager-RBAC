@@ -1,6 +1,6 @@
 const User = require("../models/user.model");
 const apiErrorHandler = require("../utils/apiErrorHandler.util");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 exports.verifyRoleAndPermission = async (req, res, next) => {
   try {
