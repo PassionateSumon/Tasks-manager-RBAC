@@ -3,7 +3,7 @@ import * as Yup from "yup";
 
 const FormWithYup = () => {
   const [data, setData] = useState({
-    fullname: "",
+    name: "",
     email: "",
     password: "",
   });
@@ -11,7 +11,7 @@ const FormWithYup = () => {
   const [err, setErr] = useState({});
 
   const signUpObject = Yup.object({
-    fullname: Yup.string().required("Full name is required"),
+    name: Yup.string().required("Name is required"),
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
@@ -29,18 +29,29 @@ const FormWithYup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    await signUpObject.validate(data, { abortEarly: false });
     try {
-      await signUpObject.validate(data, { abortEarly: false });
-      localStorage.setItem("user", JSON.stringify(data));
-      alert("Signup succesfull..");
+      // const resp = await fetch("http://localhost:3000/users/api/signup", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(data),
+      // });
+      // const res = await resp.json();
+      // console.log(res);
+
+      // localStorage.setItem("user", JSON.stringify(data));
+      // alert("Signup succesfull..");
       setErr({});
     } catch (error) {
-      // console.log(error.inner)
-      const allErrors = {};
-      error.inner.forEach((err) => {
-        allErrors[err.path] = err.message;
-      });
-      setErr(allErrors);
+      console.log("error: ", error);
+      console.log(error?.inner);
+      // const allErrors = {};
+      // error?.inner.forEach((err) => {
+      //   allErrors[err.path] = err.message;
+      // });
+      // setErr(allErrors);
     }
   }; // needs to be changed ***
 
@@ -74,12 +85,12 @@ const FormWithYup = () => {
             <label>Full name:</label>
             <input
               type="text"
-              name="fullname"
-              value={data.fullname}
+              name="name"
+              value={data.name}
               placeholder="Enter Full name"
               onChange={handleClick}
             />
-            {err.fullname && <div className="err">*{err.fullname}</div>}
+            {err.name && <div className="err">*{err.name}</div>}
           </div>
 
           <div>

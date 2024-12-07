@@ -2,19 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-/**
- * A reusable Button component with RBAC (Role-Based Access Control) support and Tailwind CSS styling.
- *
- * @param {string} type - The type of button ('button', 'submit', 'reset').
- * @param {string} variant - The visual style of the button ('primary', 'secondary', 'danger', 'outline', etc.).
- * @param {boolean} disabled - Whether the button is disabled.
- * @param {Array<string>} allowedRoles - Array of roles allowed to interact with this button.
- * @param {string} userRole - The current user's role.
- * @param {function} onClick - The click handler function.
- * @param {string} className - Additional classes for custom styling.
- * @param {React.ReactNode} children - The button's content.
- * @param {object} ...props - Any additional props.
- */
 const Button = ({
   type = 'button',
   variant = 'primary',
