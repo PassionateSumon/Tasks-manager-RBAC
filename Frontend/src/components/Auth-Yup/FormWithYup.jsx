@@ -31,15 +31,15 @@ const FormWithYup = () => {
     e.preventDefault();
     await signUpObject.validate(data, { abortEarly: false });
     try {
-      // const resp = await fetch("http://localhost:3000/users/api/signup", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(data),
-      // });
-      // const res = await resp.json();
-      // console.log(res);
+      const resp = await fetch("http://localhost:3000/users/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const res = await resp.json();
+      console.log(res);
 
       // localStorage.setItem("user", JSON.stringify(data));
       // alert("Signup succesfull..");
