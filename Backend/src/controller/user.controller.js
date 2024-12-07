@@ -102,8 +102,43 @@ exports.signin = async (req, res) => {
       },
       JWT_SECRET
     );
+    const aggregatedUser = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(existedUser.id) },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "userRole",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
 
-    return res.status(200).json({ user: existedUser, token });
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(
+          200,
+          "Signin done!",
+          token,
+          aggregatedUser[0].userRole[0].name
+        )
+      );
   } catch (error) {
     return res
       .status(400)

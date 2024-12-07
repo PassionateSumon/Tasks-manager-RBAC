@@ -1,6 +1,9 @@
 class apiResponseHandler {
-  constructor(code, message, data) {
-    (this.code = code), (this.message = message), (this.data = data);
+  constructor(code, message, data, role) {
+    (this.code = code),
+      (this.message = message),
+      (this.data = data),
+      (this.role = role);
   }
 }
 

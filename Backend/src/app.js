@@ -10,10 +10,15 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "",
+    origin: process.env.DEV_ENVIRONMENT
+      ? process.env.DEV_CORS_ORIGIN
+      : process.env.PRODUCTION_CORS_ORIGIN,
     credentials: true,
   })
 );
+app.get("/", (req, res) => {
+  res.send("<center><h1>Hello World!</h1></center>");
+});
 app.use("/users", userRouter);
 app.use("/admin", adminRouter);
 app.use("/moderator", moderateRouter);
