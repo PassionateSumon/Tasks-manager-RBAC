@@ -248,6 +248,11 @@ exports.getAllTasksByRoles = async (req, res) => {
               ],
             },
           },
+          {
+            $addFields: {
+              owner: { $arrayElemAt: ["$owner", 0] },
+            },
+          },
         ]);
         break;
 

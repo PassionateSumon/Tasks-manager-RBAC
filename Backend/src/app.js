@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.DEV_ENVIRONMENT
+    origin: process.env.DEV_ENVIRONMENT === "true"
       ? process.env.DEV_CORS_ORIGIN
       : process.env.PRODUCTION_CORS_ORIGIN,
     credentials: true,

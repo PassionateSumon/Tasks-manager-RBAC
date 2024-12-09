@@ -84,7 +84,7 @@ exports.signin = async (req, res) => {
     const { email, password } = req.body;
     const existedUser = await User.findOne({ email });
     if (!existedUser) {
-      return res.status(403).json({ message: "Invalid email!" });
+      return res.status(403).json(new apiErrorHandler(403, "Admin not found"));
     }
 
     const matchedPassword = await bcrypt.compare(
@@ -92,7 +92,7 @@ exports.signin = async (req, res) => {
       existedUser.password
     );
     if (!matchedPassword) {
-      return res.status(403).json({ message: "Invalid password!" });
+      return res.status(403).json(new apiErrorHandler(403, "Invalid password"));
     }
 
     // console.log(JWT_SECRET);
@@ -102,21 +102,70 @@ exports.signin = async (req, res) => {
       },
       JWT_SECRET
     );
+    const aggregatedUser = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(existedUser.id) },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "userRole",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
 
-    return res.status(200).json({ existedUser, token });
+    //   console.log(existedUser)
+    const finalUser = {
+      ...existedUser,
+      token,
+    };
+
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(
+          200,
+          "Signin done for user!",
+          finalUser,
+          aggregatedUser[0].userRole[0].name
+        )
+      );
   } catch (error) {
     return res
       .status(400)
       .json(new apiErrorHandler(400, "Internal error to signin admin!!"));
   }
 };
-
 exports.updateProfile = async (req, res) => {
   try {
+    const { name, email, password } = req?.body;
     const userId = req.user?.id;
-
     const userRole = req?.role;
+    const loggedInuserId = req?.params?.id;
     // console.log(userRole);
+    if (!loggedInuserId) {
+      return res.status(401).json(new apiErrorHandler(401, "Unauthorized!"));
+    }
+    if (!userId) {
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "User id is required!"));
+    }
     if (!userRole) {
       return res
         .status(403)
@@ -128,38 +177,31 @@ exports.updateProfile = async (req, res) => {
         );
     }
 
-    const allowedFields = ["name", "email", "password", "age"];
-    const updates = {};
-
-    for (const key of Object.keys(req.body)) {
-      if (allowedFields.includes(key)) {
-        updates[key] = req?.body[key];
-      }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json(new apiErrorHandler(404, "Admin not found!"));
     }
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = password;
 
-    if (Object.keys(updates).length === 0) {
-      return res
-        .status(400)
-        .json(new apiErrorHandler(400, "No valid fields to update!"));
-    }
-
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
-
+    const updatedUser = await user.save();
     if (!updatedUser) {
-      return res.status(404).json(new apiErrorHandler(404, "admin not found!"));
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "Admin not updated!"));
     }
 
-    return res.status(200).json({
-      user: updatedUser,
-      message: "Profile updated successfully!",
-    });
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(
+          200,
+          "Updated successfully.",
+          updatedUser,
+          userRole
+        )
+      );
   } catch (error) {
     return res
       .status(400)
@@ -289,7 +331,7 @@ exports.getUserProfile = async (req, res) => {
       .status(400)
       .json(new apiErrorHandler(400, "Internal error to get admin!!"));
   }
-};
+}; // actually get the admin profile
 
 exports.getAllPermissionsByRole = async (req, res) => {
   try {
@@ -400,7 +442,7 @@ exports.getAllPermissionsByRole = async (req, res) => {
   }
 };
 
-// Only "moderator" role's permissions can be changed by the admin 
+// Only "moderator" role's permissions can be changed by the admin
 exports.changePermissionsOfModeratorByAdmin = async (req, res) => {
   try {
     const loggedInAdminId = req?.user?.id;
@@ -471,7 +513,7 @@ exports.changePermissionsOfModeratorByAdmin = async (req, res) => {
   }
 };
 
-exports.increaseAndDecreasePersonRoleByAdmin = async (req, res) => {
+exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
   try {
     const userId = req?.params?.id;
     const loggedInAdminId = req?.user?.id;

@@ -22,6 +22,7 @@ router.put(
 router.delete(
   "/api/delete-pro/:id/:actionType",
   verifyToken,
+  verifyRoleAndPermission,
   asyncFuncHandler(deleteProfile)
 );
 router.get(

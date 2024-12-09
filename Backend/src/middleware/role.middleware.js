@@ -62,7 +62,7 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
     const requestedPersonRoleName = requestedPersonRole[0].userRole[0].name;
 
     switch (currUserWithRoleName) {
-      case "admin":
+      case process.env.ADMIN_ROLE:
         //check if requested person role name is "admin", if so then check only himself can change it's own things, not others
 
         if (currUserWithRoleName === requestedPersonRoleName) {
@@ -76,8 +76,8 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
         //check if requested person role name is "moderator" or "user", if so then check the loggedin person persmissions
 
         if (
-          requestedPersonRoleName === "moderator" ||
-          requestedPersonRoleName === "user"
+          requestedPersonRoleName === process.env.MODERATOR_ROLE ||
+          requestedPersonRoleName === process.env.USER_ROLE
         ) {
           //now check for the permissions on the loggedin person, not the role
           const adminPermissions = await User.aggregate([
@@ -116,9 +116,9 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
         }
         break;
 
-      case "moderator":
+      case process.env.MODERATOR_ROLE:
         //check if requested person role name is "admin", if so then just deny the request
-        if (currUserWithRoleName === "admin") {
+        if (currUserWithRoleName === process.env.ADMIN_ROLE) {
           req.role = null;
         }
         //check if requested person role name is "moderator", if so then check the only himself can change his own things
@@ -130,7 +130,7 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
           }
         }
         //check if requested person role name is "user", if so then check the loggedin person persmissions
-        if (requestedPersonRoleName === "user") {
+        if (requestedPersonRoleName === process.env.USER_ROLE) {
           //now check for the permissions on the loggedin person, not the role
           const adminPermissions = await User.aggregate([
             {
@@ -185,6 +185,6 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized role!"));
   }
 };

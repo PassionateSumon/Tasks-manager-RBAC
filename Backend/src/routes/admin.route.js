@@ -7,12 +7,15 @@ const {
   deleteProfile,
   getUserProfile,
   getAllPermissionsByRole,
-  increaseAndDecreasePersonRoleByAdmin,
   changePermissionsOfModeratorByAdmin,
+  incrementAndDecrementPersonRoleByAdmin,
 } = require("../controller/admin.controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 const { verifyRoleAndPermission } = require("../middleware/role.middleware");
 const { getAllUsersProfiles } = require("../controller/user.controller");
+const {
+  getAllModeratorsProfiles,
+} = require("../controller/moderator.controller");
 const router = express.Router();
 
 router.post("/api/signup", asyncFuncHandler(signup));
@@ -26,6 +29,7 @@ router.put(
 router.delete(
   "/api/delete-pro/:id/:actionType",
   verifyToken,
+  verifyRoleAndPermission,
   asyncFuncHandler(deleteProfile)
 );
 router.get(
@@ -38,7 +42,12 @@ router.get(
   "/api/get-all-user-profile/",
   verifyToken,
   asyncFuncHandler(getAllUsersProfiles)
-);
+); // get all profiles of users
+router.get(
+  "/api/get-all-moderators-profile/",
+  verifyToken,
+  asyncFuncHandler(getAllModeratorsProfiles)
+); // get all profiles of moderators
 router.get(
   "/api/get-all-users-permission",
   verifyToken,
@@ -54,7 +63,7 @@ router.patch(
   "/api/update-person-role-by-admin/:id",
   verifyToken,
   verifyRoleAndPermission,
-  asyncFuncHandler(increaseAndDecreasePersonRoleByAdmin)
+  asyncFuncHandler(incrementAndDecrementPersonRoleByAdmin)
 );
 
 module.exports = router;

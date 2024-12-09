@@ -93,7 +93,7 @@ exports.signin = async (req, res) => {
     const { email, password } = req.body;
     const existedUser = await User.findOne({ email });
     if (!existedUser) {
-      return res.status(403).json({ message: "Invalid email!" });
+      return res.status(403).json(new apiErrorHandler(403, "Moderator not found"));
     }
 
     const matchedPassword = await bcrypt.compare(
@@ -101,7 +101,7 @@ exports.signin = async (req, res) => {
       existedUser.password
     );
     if (!matchedPassword) {
-      return res.status(403).json({ message: "Invalid password!" });
+      return res.status(403).json(new apiErrorHandler(403, "Invalid password"));
     }
 
     // console.log(JWT_SECRET);
@@ -111,8 +111,49 @@ exports.signin = async (req, res) => {
       },
       JWT_SECRET
     );
+    const aggregatedUser = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(existedUser.id) },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "userRole",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
 
-    return res.status(200).json({ existedUser, token });
+    //   console.log(existedUser)
+    const finalUser = {
+      ...existedUser,
+      token,
+    };
+
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(
+          200,
+          "Signin done for user!",
+          finalUser,
+          aggregatedUser[0].userRole[0].name
+        )
+      );
   } catch (error) {
     return res
       .status(400)
@@ -122,10 +163,19 @@ exports.signin = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
+    const { name, email, password } = req?.body;
     const userId = req.user?.id;
-
     const userRole = req?.role;
+    const loggedInuserId = req?.params?.id;
     // console.log(userRole);
+    if (!loggedInuserId) {
+      return res.status(401).json(new apiErrorHandler(401, "Unauthorized!"));
+    }
+    if (!userId) {
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "Moderator id is required!"));
+    }
     if (!userRole) {
       return res
         .status(403)
@@ -137,40 +187,29 @@ exports.updateProfile = async (req, res) => {
         );
     }
 
-    const allowedFields = ["name", "email", "password", "age"];
-    const updates = {};
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json(new apiErrorHandler(404, "moderator not found!"));
+    }
+    if(name) user.name = name;
+    if(email) user.email = email;
+    if(password) user.password = password;
 
-    for (const key of Object.keys(req.body)) {
-      if (allowedFields.includes(key)) {
-        updates[key] = req?.body[key];
-      }
+    const updatedUser = await user.save();
+    if(!updatedUser) {
+      return res.status(500).json(new apiErrorHandler(500, "Moderator not updated!"));
     }
 
-    if (Object.keys(updates).length === 0) {
-      return res
-        .status(400)
-        .json(new apiErrorHandler(400, "No valid fields to update!"));
-    }
-
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
-
-    if (!updatedUser) {
-      return res
-        .status(404)
-        .json(new apiErrorHandler(404, "Moderator not found!"));
-    }
-
-    return res.status(200).json({
-      user: updatedUser,
-      message: "Profile updated successfully!",
-    });
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(
+          200,
+          "Updated successfully.",
+          updatedUser,
+          userRole
+        )
+      );
   } catch (error) {
     return res
       .status(400)
@@ -315,5 +354,87 @@ exports.getUserProfile = async (req, res) => {
     return res
       .status(400)
       .json(new apiErrorHandler(400, "Internal error to get moderator!!"));
+  }
+}; // i.e. moderator
+
+exports.getAllModeratorsProfiles = async (req, res) => {
+  try {
+    const loggedInUserId = req?.user?.id;
+    if (!loggedInUserId)
+      return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+    const roleOfLoggedInUser = await User.aggregate([
+      {
+        $match: {
+          _id: loggedInUserId,
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+    ]);
+
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "updatedRoles",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $gt: [{ $size: "$updatedRoles" }, 0] }, // Ensure updatedRoles[0] exists
+              {
+                $eq: [
+                  { $arrayElemAt: ["$updatedRoles.name", 0] },
+                  process.env.MODERATOR_ROLE,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
+
+    if (!users)
+      return res
+        .status(404)
+        .json(new apiErrorHandler(404, "Moderator not found"));
+    const roleName = roleOfLoggedInUser[0]?.role[0]?.name;
+    if (roleName === process.env.ADMIN_ROLE) {
+      return res
+        .status(200)
+        .json(new apiResponse(200, "All Moderators", users));
+    }
+  } catch (error) {
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have permission to get all moderators!"
+        )
+      );
   }
 };

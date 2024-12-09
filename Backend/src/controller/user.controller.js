@@ -38,7 +38,9 @@ exports.signup = async (req, res) => {
 
     const existedUser = await User.findOne({ email });
     if (existedUser) {
-      return res.status(409).json({ message: "Already exist user!" });
+      return res
+        .status(409)
+        .json(new apiErrorHandler(409, "User already exist!"));
     }
 
     const username = `${Math.random() * 1928374650}_${Date.now()}`;
@@ -54,19 +56,20 @@ exports.signup = async (req, res) => {
       permissions: [], //user has no permission initially
     });
     if (!createdUser) {
-      return res.status(500).json({ message: "Internal server error!" });
+      return res.status(500).json(new apiErrorHandler(500, "User not created"));
     }
 
     return res
       .status(200)
-      .json({ user: createdUser, message: "You're signed up!" });
+      .json(
+        new apiResponseHandler(200, "User created successfully!", createdUser)
+      );
   } catch (error) {
     return res
       .status(400)
       .json(new apiErrorHandler(400, "Internal error to signup user!!"));
   }
 };
-
 exports.signin = async (req, res) => {
   try {
     const requiredBody = z.object({
@@ -84,7 +87,7 @@ exports.signin = async (req, res) => {
     const { email, password } = req.body;
     const existedUser = await User.findOne({ email });
     if (!existedUser) {
-      return res.status(403).json({ message: "Invalid email!" });
+      return res.status(403).json(new apiErrorHandler(403, "User not found"));
     }
 
     const matchedPassword = await bcrypt.compare(
@@ -92,7 +95,7 @@ exports.signin = async (req, res) => {
       existedUser.password
     );
     if (!matchedPassword) {
-      return res.status(403).json({ message: "Invalid password!" });
+      return res.status(403).json(new apiErrorHandler(403, "Invalid password"));
     }
 
     // console.log(JWT_SECRET);
@@ -129,13 +132,19 @@ exports.signin = async (req, res) => {
       },
     ]);
 
+    //   console.log(existedUser)
+    const finalUser = {
+      ...existedUser,
+      token,
+    };
+
     return res
       .status(200)
       .json(
         new apiResponseHandler(
           200,
-          "Signin done!",
-          token,
+          "Signin done for user!",
+          finalUser,
           aggregatedUser[0].userRole[0].name
         )
       );
@@ -145,13 +154,21 @@ exports.signin = async (req, res) => {
       .json(new apiErrorHandler(400, "Internal error to signin user!!"));
   }
 };
-
 exports.updateProfile = async (req, res) => {
   try {
+    const { name, email, password } = req?.body;
     const userId = req.user?.id;
-
     const userRole = req?.role;
+    const loggedInuserId = req?.params?.id;
     // console.log(userRole);
+    if (!loggedInuserId) {
+      return res.status(401).json(new apiErrorHandler(401, "Unauthorized!"));
+    }
+    if (!userId) {
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "User id is required!"));
+    }
     if (!userRole) {
       return res
         .status(403)
@@ -163,38 +180,31 @@ exports.updateProfile = async (req, res) => {
         );
     }
 
-    const allowedFields = ["name", "email", "password", "age"];
-    const updates = {};
-
-    for (const key of Object.keys(req.body)) {
-      if (allowedFields.includes(key)) {
-        updates[key] = req?.body[key];
-      }
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return res
-        .status(400)
-        .json(new apiErrorHandler(400, "No valid fields to update!"));
-    }
-
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
-
-    if (!updatedUser) {
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json(new apiErrorHandler(404, "User not found!"));
     }
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = password;
 
-    return res.status(200).json({
-      user: updatedUser,
-      message: "Profile updated successfully!",
-    });
+    const updatedUser = await user.save();
+    if (!updatedUser) {
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "User not updated!"));
+    }
+
+    return res
+      .status(200)
+      .json(
+        new apiResponseHandler(
+          200,
+          "Updated successfully.",
+          updatedUser,
+          userRole
+        )
+      );
   } catch (error) {
     return res
       .status(400)
@@ -244,7 +254,6 @@ exports.deleteProfile = async (req, res) => {
       .json(new apiErrorHandler(400, "Internal error to delete user!!"));
   }
 };
-
 exports.getUserProfile = async (req, res) => {
   try {
     const userId = req?.user?.id;
@@ -325,7 +334,6 @@ exports.getUserProfile = async (req, res) => {
       .json(new apiErrorHandler(400, "Internal error to get user!!"));
   }
 };
-
 exports.getAllUsersProfiles = async (req, res) => {
   try {
     const loggedInUserId = req?.user?.id;

@@ -1,17 +1,18 @@
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import * as Yup from "yup";
+import { loginUser } from "../../redux/slices/authSlice";
 
-const FormWithYup = () => {
+const FormWithYupLogin = () => {
   const [data, setData] = useState({
-    name: "",
     email: "",
     password: "",
   });
+  const dispatch = useDispatch();
 
   const [err, setErr] = useState({});
 
   const signUpObject = Yup.object({
-    name: Yup.string().required("Name is required"),
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
@@ -29,31 +30,28 @@ const FormWithYup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await signUpObject.validate(data, { abortEarly: false });
     try {
-      const resp = await fetch("http://localhost:3000/users/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+      await signUpObject.validate(data, { abortEarly: false });
+      dispatch(loginUser(data)).then((res) => {
+        const stat = res.type.split("/")[2];
+        if (stat === "fulfilled") {
+          setData({
+            email: "",
+            password: "",
+          });
+        }
       });
-      const res = await resp.json();
-      console.log(res);
-
-      // localStorage.setItem("user", JSON.stringify(data));
-      // alert("Signup succesfull..");
       setErr({});
     } catch (error) {
       console.log("error: ", error);
       console.log(error?.inner);
-      // const allErrors = {};
-      // error?.inner.forEach((err) => {
-      //   allErrors[err.path] = err.message;
-      // });
-      // setErr(allErrors);
+      const allErrors = {};
+      error?.inner?.forEach((err) => {
+        allErrors[err?.path] = err?.message;
+      });
+      setErr(allErrors);
     }
-  }; // needs to be changed ***
+  }; // needs to be changed ***  --> almost done
 
   const handleClick = (e) => {
     let { name, value } = e.target;
@@ -80,20 +78,12 @@ const FormWithYup = () => {
   return (
     <div className="">
       <form className="form" onSubmit={handleSubmit}>
-        <div className="bg-[#2A2739] space-y-5 w-fit p-10">
-          <div>
-            <label>Full name:</label>
-            <input
-              type="text"
-              name="name"
-              value={data.name}
-              placeholder="Enter Full name"
-              onChange={handleClick}
-            />
-            {err.name && <div className="err">*{err.name}</div>}
-          </div>
+        <div className="bg-[#2A2739] rounded-2xl space-y-10 w-fit px-6 py-10 text-[#E6E1FF] shadow-[0_4px_15px_rgba(245,66,152,0.6)] ">
+          <label className="flex justify-center text-3xl font-bold mt-[-20px] ">
+            Login
+          </label>
 
-          <div>
+          <div className="flex items-center space-x-11">
             <label>Email:</label>
             <input
               type="email"
@@ -101,11 +91,12 @@ const FormWithYup = () => {
               value={data.email}
               placeholder="Enter Email"
               onChange={handleClick}
+              className="rounded-md p-2 bg-transparent border border-[#7d0a68]"
             />
             {err.email && <div className="err">*{err.email}</div>}
           </div>
 
-          <div>
+          <div className="flex items-center space-x-4">
             <label>Password:</label>
             <input
               type="password"
@@ -113,15 +104,23 @@ const FormWithYup = () => {
               value={data.password}
               placeholder="Enter Password"
               onChange={handleClick}
+              className="rounded-md p-2 bg-transparent border border-[#7d0a68]"
             />
             {err.password && <div className="err">*{err.password}</div>}
           </div>
 
-          <button type="submit">Submit</button>
+          <div className="flex justify-center pt-2">
+            <button
+              type="submit"
+              className=" border py-2 px-4 rounded-md hover:border-2 hover:border-[#7d0a68] duration-200 hover:scale-105 "
+            >
+              Submit
+            </button>
+          </div>
         </div>
       </form>
     </div>
   );
 };
 
-export default FormWithYup;
+export default FormWithYupLogin;
