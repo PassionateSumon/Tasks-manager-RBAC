@@ -15,6 +15,7 @@ export const loginUser = createAsyncThunk(
   "user/signin",
   async (data, { rejectWithValue }) => {
     try {
+      console.log(data)
       const apiRes = await useApi("users/api/signin", "POST", {
         body: JSON.stringify(data),
       });
@@ -30,9 +31,7 @@ export const verifyToken = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const apiRes = await useApi(
-        `users/api/get-user-profile/${Cookies.get("c_id")}/${
-          import.meta.env.VITE_PROFILE_READ
-        }`,
+        "validate-token",
         "GET",
         {
           headers: {
@@ -85,7 +84,7 @@ const authSlice = createSlice({
         }
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(verifyToken.pending, (state) => {
@@ -97,15 +96,15 @@ const authSlice = createSlice({
           state.isLoggedIn = false;
           // state.error = action?.payload?.message;
         } else {
-          // console.log(action);
+          // console.log(action?.payload?.data[0]);
+          // console.log(action?.payload?.data[0]?.roles[0].name);
           state.isLoggedIn = true;
-          const role = action?.payload?.data[0]?.roles[0].name || "";
-          state.role = role;
+          state.role = action?.payload?.data[0]?.roles[0].name || "";
           state.user = action?.payload?.data[0];
         }
       })
       .addCase(verifyToken.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred in token.";
       });
   },

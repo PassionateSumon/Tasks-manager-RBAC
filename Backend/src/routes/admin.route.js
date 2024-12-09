@@ -9,6 +9,7 @@ const {
   getAllPermissionsByRole,
   changePermissionsOfModeratorByAdmin,
   incrementAndDecrementPersonRoleByAdmin,
+  getAllRoles,
 } = require("../controller/admin.controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 const { verifyRoleAndPermission } = require("../middleware/role.middleware");
@@ -16,6 +17,7 @@ const { getAllUsersProfiles } = require("../controller/user.controller");
 const {
   getAllModeratorsProfiles,
 } = require("../controller/moderator.controller");
+const { getAllTasksByRoles } = require("../controller/task.controller");
 const router = express.Router();
 
 router.post("/api/signup", asyncFuncHandler(signup));
@@ -39,12 +41,12 @@ router.get(
   asyncFuncHandler(getUserProfile)
 );
 router.get(
-  "/api/get-all-user-profile/",
+  "/api/get-all-user-profile",
   verifyToken,
   asyncFuncHandler(getAllUsersProfiles)
 ); // get all profiles of users
 router.get(
-  "/api/get-all-moderators-profile/",
+  "/api/get-all-moderators-profile",
   verifyToken,
   asyncFuncHandler(getAllModeratorsProfiles)
 ); // get all profiles of moderators
@@ -53,6 +55,11 @@ router.get(
   verifyToken,
   asyncFuncHandler(getAllPermissionsByRole)
 );
+router.get(
+  "/api/get-all-roles",
+  verifyToken,
+  asyncFuncHandler(getAllRoles)
+);
 router.put(
   "/api/change-permissions-moderator",
   verifyToken,
@@ -60,7 +67,7 @@ router.put(
   asyncFuncHandler(changePermissionsOfModeratorByAdmin)
 );
 router.patch(
-  "/api/update-person-role-by-admin/:id",
+  "/api/update-person-role-by-admin/:id/:actionType",
   verifyToken,
   verifyRoleAndPermission,
   asyncFuncHandler(incrementAndDecrementPersonRoleByAdmin)

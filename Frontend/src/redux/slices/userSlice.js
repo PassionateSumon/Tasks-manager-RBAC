@@ -1,11 +1,17 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { useApi } from "../../utils/apiWrapper";
+import Cookies from "js-cookie";
 
 const initialState = {
   loading: false,
   error: "",
-  updated_user: null,
+  user: [],
+  tasks: [],
 };
+const BASE_URL =
+  import.meta.env.VITE_DEV_ENVIRONMENT === "true"
+    ? import.meta.env.VITE_DEV_SERVER
+    : import.meta.env.VITE_PRODUCTION_SERVER;
 
 export const createUser = createAsyncThunk(
   "user/signup",
@@ -20,7 +26,6 @@ export const createUser = createAsyncThunk(
     }
   }
 );
-
 export const updateUserProfile = createAsyncThunk(
   "user/update-pro",
   async (data, { rejectWithValue }) => {
@@ -43,11 +48,56 @@ export const updateUserProfile = createAsyncThunk(
     }
   }
 );
+export const createTask = createAsyncThunk(
+  "user/create-task",
+  async ({ title, description }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${BASE_URL}/task/api/create-task`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: Cookies.get("token"),
+        },
+        credentials: "include",
+        body: JSON.stringify({ title, description }),
+      });
+      const res = await response.json();
+      return res;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+export const fetchTasks = createAsyncThunk(
+  "user/fetch-tasks",
+  async (_, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi(
+        `task/api/get-tasks-by-actual-person/${Cookies.get("c_id")}/${
+          import.meta.env.VITE_TASK_READ
+        }`,
+        "GET",
+        {
+          headers: {
+            Authorization: Cookies.get("token"),
+          },
+        }
+      );
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    addTask: (state, action) => {
+      state.tasks = [...state.tasks, action.payload];
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createUser.pending, (state) => {
@@ -82,7 +132,42 @@ const userSlice = createSlice({
         state.loading = true;
         state.error = action.payload?.message || "An error occurred.";
       })
+      .addCase(createTask.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createTask.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.code > 300) {
+          state.error = action?.message;
+        } else {
+          // console.log(action.payload?.data);
+          state.error = "";
+        }
+      })
+      .addCase(createTask.rejected, (state, action) => {
+        state.loading = true;
+        state.error = action.payload?.message || "An error occurred.";
+      })
+      .addCase(fetchTasks.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.code > 300) {
+          state.error = action?.message;
+        } else {
+          // console.log(action.payload);
+          state.tasks = action.payload?.data;
+          state.error = "";
+        }
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.loading = true;
+        state.error = action.payload?.message || "An error occurred.";
+      });
   },
 });
+
+export const { addTask } = userSlice.actions;
 
 export default userSlice;

@@ -4,55 +4,62 @@ import { FiHome, FiUsers, FiSettings } from "react-icons/fi";
 import { useSelector } from "react-redux";
 
 const Sidebar = () => {
+  // Fetch the current role from Redux
   const currRole = useSelector((state) => state.auth.role);
+
+  // Menu items for each role
   const selectAccordingToRole = {
     admin: [
       {
         name: "Dashboard",
-        path: "admin-dashboard",
-        icon: <FiHome />,
+        path: "admin-dashboard", // Updated path for proper navigation
+        icon: <FiHome className="text-xl" />,
       },
       {
         name: "User Management",
         path: "admin-control-users",
-        icon: <FiUsers />,
+        icon: <FiUsers className="text-xl" />,
       },
       {
-        name: "Role Management",
-        path: "admin-control-roles",
-        icon: <FiSettings />,
+        name: "Moderator Management",
+        path: "admin-control-moderators",
+        icon: <FiUsers className="text-xl" />,
       },
     ],
     moderator: [
       {
         name: "Dashboard",
         path: "moderator-dashboard",
-        icon: <FiHome />,
+        icon: <FiHome className="text-xl" />,
       },
     ],
     user: [
       {
         name: "Dashboard",
         path: "user-dashboard",
-        icon: <FiHome />,
+        icon: <FiHome className="text-xl" />,
       },
     ],
   };
 
+  // Dynamically select items based on role
   const sidebarItems = selectAccordingToRole[currRole] || [];
 
   return (
-    <div className="bg-gray-800 text-white w-64 h-full p-4">
-      <h1 className="text-2xl font-bold mb-6">Admin Panel</h1>
-      <ul>
-        {sidebarItems?.map((item) => (
-          <li key={item.path} className="mb-4">
+    <div className="bg-[#2A2739] text-[#E6E1FF] w-64 h-full p-4 flex flex-col shadow-[0_4px_15px_rgba(245,66,152,0.3)]">
+      {/* Header */}
+      <h1 className="text-2xl font-bold mb-6">{currRole.toUpperCase()} PANEL</h1>
+
+      {/* Sidebar Items */}
+      <ul className="space-y-4">
+        {sidebarItems.map((item) => (
+          <li key={item.path}>
             <Link
               to={item.path}
-              className="flex items-center hover:text-gray-400"
+              className="flex items-center p-2 hover:bg-gray-700 rounded-md transition"
             >
               {item.icon}
-              <span className="ml-2">{item.name}</span>
+              <span className="ml-3 text-sm font-medium">{item.name}</span>
             </Link>
           </li>
         ))}

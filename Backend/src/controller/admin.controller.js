@@ -519,6 +519,8 @@ exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
     const loggedInAdminId = req?.user?.id;
     const role = req?.role;
     const { roleId } = req?.body; // the role to which the user is to be promoted or demoted
+    // console.log("req-bodyu: ",req.body)
+    // console.log("req-id: ",roleId)
     if (!loggedInAdminId)
       return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
     if (!role)
@@ -576,6 +578,7 @@ exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
       new mongoose.Types.ObjectId(roleId)
     ); // given roleId is valid or not
 
+    // console.log(RoleTobeUpdated)
     if (!RoleTobeUpdated)
       return res
         .status(404)
@@ -591,6 +594,7 @@ exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
           )
         );
 
+      // console.log(user)
     user.role = new mongoose.Types.ObjectId(roleId); //user role updated
     user.permissions = RoleTobeUpdated.permissions; //user permissions updated
     const userAfterSave = await user.save();
@@ -606,7 +610,7 @@ exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
         );
     return res
       .status(200)
-      .json(new apiResponse(200, "User role updated", user));
+      .json(new apiResponseHandler(200, "User role updated", userAfterSave));
   } catch (error) {
     return res
       .status(400)
@@ -617,4 +621,41 @@ exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
         )
       );
   }
+};
+
+exports.getAllRoles = async (req, res) => {
+  const loggedInAdminId = req?.user?.id;
+  const admin = await User.aggregate([
+    {
+      $match: {
+        _id: loggedInAdminId,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+  ]);
+  const roleName = admin[0]?.role[0]?.name;
+  if (roleName === process.env.ADMIN_ROLE) {
+    const allRoles = await Role.find({});
+    if (!allRoles)
+      return res
+        .status(500)
+        .json(
+          new apiErrorHandler(500, "Roles not found for some unknown reason")
+        );
+    return res
+      .status(200)
+      .json(new apiResponseHandler(200, "Roles found", allRoles));
+  }
+  return res
+    .status(401)
+    .json(
+      new apiErrorHandler(401, "You don't have the permission to get all roles")
+    );
 };

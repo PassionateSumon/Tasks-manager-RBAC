@@ -78,7 +78,7 @@ const FormWithYupLogin = () => {
   return (
     <div className="">
       <form className="form" onSubmit={handleSubmit}>
-        <div className="bg-[#2A2739] rounded-2xl space-y-10 w-fit px-6 py-10 text-[#E6E1FF] shadow-[0_4px_15px_rgba(245,66,152,0.6)] ">
+        <div className="bg-[#2A2739] rounded-2xl space-y-10 w-fit px-6 py-10 text-[#E6E1FF] shadow-[0_4px_15px_rgba(245,66,152,0.5)] ">
           <label className="flex justify-center text-3xl font-bold mt-[-20px] ">
             Login
           </label>

@@ -13,7 +13,7 @@ const AdminLayout = () => {
     navigate("/login");
   }
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-[#1E1B29] ">
       {/* Sidebar */}
       <Sidebar />
 

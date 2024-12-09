@@ -2,11 +2,13 @@ const apiErrorHandler = require("../utils/apiErrorHandler.util");
 const apiResponseHandler = require("../utils/apiResponseHandler.util");
 const Task = require("../models/task.model");
 const mongoose = require("mongoose");
+const User = require("../models/user.model");
 
 exports.createTask = async (req, res) => {
   try {
     const userId = req?.user?.id;
     const { title, description } = req?.body;
+    console.log(req.body)
 
     if (!userId) {
       return res.status(403).json(new apiErrorHandler(403, "Unauthorized"));
@@ -23,7 +25,7 @@ exports.createTask = async (req, res) => {
     const newTask = await Task.create({
       title,
       description: description || "",
-      owner: userId,
+      owner: new mongoose.Types.ObjectId(userId),
     });
 
     if (!newTask) {
@@ -43,8 +45,6 @@ exports.createTask = async (req, res) => {
       .json(new apiErrorHandler(400, "Internal server error at catch!!"));
   }
 };
-
-// This needs to be changed --> see later...
 exports.updateTask = async (req, res) => {
   try {
     const userId = req?.user?.id;
@@ -200,6 +200,11 @@ exports.getSingleTask = async (req, res) => {
 exports.getAllTasksByRoles = async (req, res) => {
   try {
     const adminId = req?.user?.id;
+    // console.log(adminId, "1")
+    if (!adminId)
+      return res
+        .status(403)
+        .json(new apiErrorHandler(403, "Unauthorized for getting all tasks!"));
     const aggregateRes = await User.aggregate([
       {
         $match: {
@@ -215,12 +220,19 @@ exports.getAllTasksByRoles = async (req, res) => {
         },
       },
     ]);
+    // console.log("2")
+    if (!aggregateRes)
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "Internal server error!"));
     const role = aggregateRes[0]?.role[0]?.name;
+    // console.log("3")
     if (!role) {
       return res
         .status(403)
         .json(new apiErrorHandler(403, "Unauthorized for getting all tasks!"));
     }
+    // console.log("4")
     let getTasksForAdmin, getTasksForModerator, getTasksForUser;
     switch (role) {
       case process.env.ADMIN_ROLE:
@@ -328,8 +340,9 @@ exports.getAllTasksByRoles = async (req, res) => {
             },
           },
         ]);
+        break;
     }
-
+    // console.log("5")
     if (role === process.env.ADMIN_ROLE) {
       return res
         .status(200)
@@ -337,6 +350,7 @@ exports.getAllTasksByRoles = async (req, res) => {
           new apiResponseHandler(200, "Successfully get.", getTasksForAdmin)
         );
     }
+    // console.log("6")
     if (role === process.env.MODERATOR_ROLE) {
       return res
         .status(200)
@@ -344,6 +358,7 @@ exports.getAllTasksByRoles = async (req, res) => {
           new apiResponseHandler(200, "Successfully get.", getTasksForModerator)
         );
     }
+    // console.log("7")
     if (role === process.env.USER_ROLE) {
       return res
         .status(200)
@@ -351,5 +366,45 @@ exports.getAllTasksByRoles = async (req, res) => {
           new apiResponseHandler(200, "Successfully get.", getTasksForUser)
         );
     }
-  } catch (error) {}
+    // console.log("here")
+  } catch (error) {
+    return res
+      .status(400)
+      .json(
+        new apiErrorHandler(400, "Internal server error to get task at catch!")
+      );
+  }
+};
+
+exports.getTasksOfUser = async (req, res) => {
+  try {
+    const userId = req?.params?.id;
+    const loggedInPersonId = req?.user.id;
+    const role = req?.role;
+    if (!loggedInPersonId)
+      return res.status(400).json(new apiErrorHandler(400, "Unauthorized"));
+    if (!role)
+      return res
+        .status(400)
+        .json(
+          new apiErrorHandler(400, "You don't have a permission to read tasks")
+        );
+
+    const person = await Task.aggregate([
+      {
+        $match: {
+          owner: new mongoose.Types.ObjectId(userId),
+        },
+      },
+    ]);
+    if (!person)
+      return res.status(404).json(new apiErrorHandler(404, "Person not found"));
+    return res.status(200).json(new apiResponseHandler(200, "Tasks found", person));
+  } catch (error) {
+    return res
+      .status(400)
+      .json(
+        new apiErrorHandler(400, "Internal server error to get task at catch!")
+      );
+  }
 };

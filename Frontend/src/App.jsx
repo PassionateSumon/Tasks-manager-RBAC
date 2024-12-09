@@ -5,16 +5,17 @@ import Cookies from "js-cookie";
 
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
-import HomeAdmin from "./pages/Admin/HomeAdmin";
-import HomeUser from "./pages/User/HomeUser";
-import HomeModerator from "./pages/Moderator/HomeModerator";
 import Landing from "./pages/Landing";
 
 import { verifyToken } from "./redux/slices/authSlice";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import UserManagement from "./pages/Admin/UserManagement";
+import ModeratorManagement from "./pages/Admin/ModeratorManagement";
 import RoleManagement from "./pages/Admin/RoleManagement";
 import AdminLayout from "./pages/Admin/AdminLayout";
+import UserLayout from "./pages/User/UserLayout";
+import ModeratorLayout from "./pages/Moderator/ModeratorLayout";
+import UserDashboard from "./pages/User/UserDashboard";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -74,6 +75,10 @@ const App = () => {
       >
         <Route path="admin-dashboard" element={<AdminDashboard />} />
         <Route path="admin-control-users" element={<UserManagement />} />
+        <Route
+          path="admin-control-moderators"
+          element={<ModeratorManagement />}
+        />
         <Route path="admin-control-roles" element={<RoleManagement />} />
       </Route>
 
@@ -82,24 +87,28 @@ const App = () => {
         path="/home-user"
         element={
           isLoggedIn && role === "user" ? (
-            <HomeUser />
+            <UserLayout />
           ) : (
             <Navigate to="/login" />
           )
         }
-      > </Route>
+      >
+        <Route path="user-dashboard" element={<UserDashboard />} />
+      </Route>
 
       {/* moderator routes */}
       <Route
         path="/home-moderator"
         element={
           isLoggedIn && role === "moderator" ? (
-            <HomeModerator />
+            <ModeratorLayout />
           ) : (
             <Navigate to="/login" />
           )
         }
-      > </Route>
+      >
+        {" "}
+      </Route>
     </Routes>
   );
 };

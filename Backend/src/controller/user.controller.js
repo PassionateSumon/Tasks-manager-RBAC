@@ -243,11 +243,17 @@ exports.deleteProfile = async (req, res) => {
     // it can be done via role-middleware in route
     // so it's sure that who is here either user/admin
 
-    await User?.findByIdAndDelete(deleteUserId);
-
+    const deletedUser = await User?.findByIdAndDelete(deleteUserId);
+    if (!deletedUser) {
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "User not deleted!"));
+    }
     return res
       .status(200)
-      .json(new apiResponseHandler(200, "User deleted successfully!"));
+      .json(
+        new apiResponseHandler(200, "User deleted successfully!", deletedUser)
+      );
   } catch (error) {
     return res
       .status(400)
@@ -337,8 +343,12 @@ exports.getUserProfile = async (req, res) => {
 exports.getAllUsersProfiles = async (req, res) => {
   try {
     const loggedInUserId = req?.user?.id;
-    if (!loggedInUserId)
+    // console.log("id: ", loggedInUserId);
+    if (!loggedInUserId) {
+      // console.log("here");
       return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+    }
+
     const roleOfLoggedInUser = await User.aggregate([
       {
         $match: {
@@ -354,6 +364,12 @@ exports.getAllUsersProfiles = async (req, res) => {
         },
       },
     ]);
+    // console.log(roleOfLoggedInUser);
+    if (!roleOfLoggedInUser) {
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "Unauthorized role"));
+    }
 
     const users = await User.aggregate([
       {
@@ -388,21 +404,91 @@ exports.getAllUsersProfiles = async (req, res) => {
         },
       },
     ]);
-
+    // console.log(users);
     if (!users)
       return res.status(404).json(new apiErrorHandler(404, "Users not found"));
     const roleName = roleOfLoggedInUser[0]?.role[0]?.name;
-    if (
-      roleName === process.env.ADMIN_ROLE ||
-      roleName === process.env.MODERATOR_ROLE
-    ) {
-      return res.status(200).json(new apiResponse(200, "All Users", users));
+    // console.log(roleName);
+    if (roleName === "admin" || roleName === process.env.MODERATOR_ROLE) {
+      return res
+        .status(200)
+        .json(new apiResponseHandler(200, "All Users", users));
     }
   } catch (error) {
     return res
       .status(401)
       .json(
-        new apiErrorHandler(401, "You don't have permission to get all users")
+        new apiErrorHandler(
+          401,
+          "You don't have permission to get all users in catch"
+        )
       );
+  }
+};
+exports.validateToken = async (req, res) => {
+  try {
+    const token = req?.headers?.authorization;
+    console.log(token);
+
+    if (!token) {
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "Token is missing!"));
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded) {
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "Token is invalid!"));
+    }
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(400).json(new apiErrorHandler(400, "User not found!"));
+    }
+    const allUserDetails = await User.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(user),
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "roles",
+        },
+      },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
+      {
+        $project: {
+          password: 0,
+        },
+      },
+    ]);
+
+    if (!allUserDetails) {
+      return res
+        .status(404)
+        .json(
+          new apiErrorHandler(404, "User is not present after aggregation!")
+        );
+    }
+
+    return res
+      .status(200)
+      .json(new apiResponseHandler(200, "Token is valid!", allUserDetails));
+  } catch (error) {
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "Internal error to validate token!!"));
   }
 };

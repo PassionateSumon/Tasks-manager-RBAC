@@ -4,7 +4,11 @@ import { useApi } from "../../utils/apiWrapper";
 const initialState = {
   loading: false,
   error: "",
-  updated_moderator: null,
+  updated_mods: [],
+  users: [],
+  tasks: [],
+  userCount: 0,
+  taskCount: 0,
 };
 
 export const createModerator = createAsyncThunk(
@@ -20,7 +24,6 @@ export const createModerator = createAsyncThunk(
     }
   }
 );
-
 export const updateModeratorProfile = createAsyncThunk(
   "moderator/update-pro",
   async (data, { rejectWithValue }) => {

@@ -6,7 +6,7 @@ const Role = require("../models/role.model");
 
 const apiErrorHandler = require("../utils/apiErrorHandler.util");
 const apiResponseHandler = require("../utils/apiResponseHandler.util");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.signup = async (req, res) => {
@@ -425,7 +425,7 @@ exports.getAllModeratorsProfiles = async (req, res) => {
     if (roleName === process.env.ADMIN_ROLE) {
       return res
         .status(200)
-        .json(new apiResponse(200, "All Moderators", users));
+        .json(new apiResponseHandler(200, "All Moderators", users));
     }
   } catch (error) {
     return res

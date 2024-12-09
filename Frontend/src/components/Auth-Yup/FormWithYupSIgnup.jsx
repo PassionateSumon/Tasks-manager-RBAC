@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import { createUser } from "../../redux/slices/userSlice";
 import { registerAdmin } from "../../redux/slices/adminSlice";
 import { createModerator } from "../../redux/slices/moderatorSlice";
+import { useNavigate } from "react-router-dom";
 
 const FormWithYupSignup = ({ role }) => {
   const [data, setData] = useState({
@@ -12,6 +13,7 @@ const FormWithYupSignup = ({ role }) => {
     password: "",
   });
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [err, setErr] = useState({});
 
@@ -71,6 +73,7 @@ const FormWithYupSignup = ({ role }) => {
         });
       }
       setErr({});
+      navigate("/login");
     } catch (error) {
       console.log("error: ", error);
       console.log(error?.inner);

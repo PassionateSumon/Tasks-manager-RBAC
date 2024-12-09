@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  deleteMod,
   deleteUser,
+  getAllMods,
   getAllRoles,
-  getAllUsers,
-  removeUser,
+  removeMod,
   upgradeUserToAny,
 } from "../../redux/slices/adminSlice";
 
-const UserManagement = () => {
+const ModeratorManagement = () => {
   const dispatch = useDispatch();
-  const users = useSelector((state) => state.admin.users); // List of users from Redux store
-  const roles = useSelector((state) => state.admin.roles); // List of roles from Redux store
+  const moderators = useSelector((state) => state.admin.moderators); // Moderators from Redux store
+  const roles = useSelector((state) => state.admin.roles); // Roles from Redux store
   const [activeDropdown, setActiveDropdown] = useState(null); // State to track dropdown visibility
 
-  // Fetch users and roles on component mount
+  // Fetch moderators and roles on component mount
   useEffect(() => {
-    dispatch(getAllUsers());
+    dispatch(getAllMods());
     dispatch(getAllRoles());
   }, [dispatch]);
 
@@ -25,57 +26,70 @@ const UserManagement = () => {
     setActiveDropdown((prev) => (prev === userId ? null : userId));
   };
 
-  // Dummy handlers for button actions
+  // Delete user action
   const handleDelete = (userId) => {
-    dispatch(deleteUser(userId)).then((res) => {
+    dispatch(deleteMod(userId)).then((res) => {
       if (res.payload.code < 300) {
-        dispatch(removeUser({ id: userId }));
+        dispatch(removeMod({ id: userId }));
       }
     });
-    // console.log(`Delete user with ID: ${userId}`);
   };
 
+  // Upgrade user role action
   const handleUpgrade = (userId, roleId) => {
     dispatch(upgradeUserToAny({ u_id: userId, r_id: roleId })).then((res) => {
       if (res.payload.code < 300) {
-        dispatch(removeUser({ id: userId }));
+        dispatch(removeMod({ id: userId }));
       }
     });
-    console.log(`Upgrade user with ID: ${userId} to Role ID: ${roleId}`);
-    setActiveDropdown(null); // Close dropdown after selecting role
+    setActiveDropdown(null); // Close dropdown after action
   };
 
   return (
     <div className="p-6 bg-[#2A2739] rounded-lg shadow-[0_2px_0px_rgba(245,66,152,0.3)]">
       {/* Page Title */}
       <h1 className="text-2xl font-bold mb-6 text-[#E6E1FF]">
-        User Management
+        Moderator Management
       </h1>
 
-      {/* User Table */}
+      {/* Moderators Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[#E6E1FF]">
           <thead className="bg-[#1E1B29]">
             <tr>
               <th className="py-3 px-6">Name</th>
               <th className="py-3 px-6">Email</th>
+              <th className="py-3 px-6">Permissions</th>
               <th className="py-3 px-6">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users?.length > 0 ? (
-              users.map((user) => (
+            {moderators?.length > 0 ? (
+              moderators.map((moderator) => (
                 <tr
-                  key={user._id}
+                  key={moderator._id}
                   className="bg-[#2A2739] hover:bg-[#1E1B29] transition"
                 >
-                  <td className="py-4 px-6">{user.name}</td>
-                  <td className="py-4 px-6">{user.email}</td>
+                  <td className="py-4 px-6">{moderator.name}</td>
+                  <td className="py-4 px-6">{moderator.email}</td>
+                  <td className="py-4 px-6">
+                    <ul className="list-disc pl-5">
+                      {moderator.permissions?.map((perm) => (
+                        <li key={perm._id}>
+                          {perm.task
+                            ? `task-${perm.task}`
+                            : perm.profile
+                            ? `profile-${perm.profile}`
+                            : `role-${perm.role}`}
+                        </li>
+                      ))}
+                    </ul>
+                  </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-4">
                       {/* Delete Button */}
                       <button
-                        onClick={() => handleDelete(user._id)}
+                        onClick={() => handleDelete(moderator._id)}
                         className="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
                       >
                         Delete
@@ -84,20 +98,20 @@ const UserManagement = () => {
                       {/* Upgrade Button */}
                       <div className="relative">
                         <button
-                          onClick={() => toggleDropdown(user._id)}
+                          onClick={() => toggleDropdown(moderator._id)}
                           className="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
                         >
                           Change
                         </button>
 
                         {/* Dropdown Menu */}
-                        {activeDropdown === user._id && (
+                        {activeDropdown === moderator._id && (
                           <div className="absolute top-12 left-0 bg-[#1E1B29] text-[#E6E1FF] shadow-[0_2px_0px_rgba(245,66,152,0.3)] rounded-lg p-2 space-y-2 z-10">
                             {roles?.map((role) => (
                               <button
                                 key={role._id}
                                 onClick={() =>
-                                  handleUpgrade(user._id, role._id)
+                                  handleUpgrade(moderator._id, role._id)
                                 }
                                 className={`text-sm px-4 py-2 ${
                                   role.name === "admin"
@@ -119,10 +133,10 @@ const UserManagement = () => {
             ) : (
               <tr>
                 <td
-                  colSpan="3"
+                  colSpan="4"
                   className="text-center py-4 text-[#E6E1FF] italic"
                 >
-                  No users found.
+                  No moderators found.
                 </td>
               </tr>
             )}
@@ -133,4 +147,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default ModeratorManagement;
