@@ -15,7 +15,7 @@ export const loginUser = createAsyncThunk(
   "user/signin",
   async (data, { rejectWithValue }) => {
     try {
-      console.log(data)
+      // console.log(data)
       const apiRes = await useApi("users/api/signin", "POST", {
         body: JSON.stringify(data),
       });

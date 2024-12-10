@@ -16,3 +16,4 @@ export const useApi = async (lastPart, method, options) => {
   const result = await response.json();
   return result;
 };
+

@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addTask, createTask, fetchTasks } from "../../redux/slices/userSlice";
+import {
+  addTask,
+  createTask,
+  deleteTask,
+  fetchTasks,
+  removeTask,
+  updateTask,
+} from "../../redux/slices/userSlice";
 
 const UserDashboard = () => {
   const dispatch = useDispatch();
@@ -10,7 +17,7 @@ const UserDashboard = () => {
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [editingDescription, setEditingDescription] = useState("");
-//   console.log(tasks);
+  // console.log(tasks);
 
   useEffect(() => {
     dispatch(fetchTasks()); // Fetch tasks on component mount
@@ -18,24 +25,27 @@ const UserDashboard = () => {
 
   const handleCreateTask = () => {
     if (taskTitle.trim() && taskDescription.trim()) {
-      dispatch(createTask({ title: taskTitle, description: taskDescription }))
-      .then((res) => dispatch(addTask(res.payload.data)));
+      dispatch(
+        createTask({ title: taskTitle, description: taskDescription })
+      ).then((res) => dispatch(addTask(res.payload?.data)));
       setTaskTitle("");
       setTaskDescription("");
     }
   };
 
   const handleUpdateTask = (id) => {
-    // if (editingTitle.trim() && editingDescription.trim()) {
-    //   dispatch(
-    //     updateTask({ id, title: editingTitle, description: editingDescription })
-    //   );
-    //   setEditingTaskId(null);
-    // }
+    if (editingTitle.trim() && editingDescription.trim()) {
+      dispatch(
+        updateTask({ id, title: editingTitle, description: editingDescription })
+      );
+      setEditingTaskId(null);
+    }
   };
 
   const handleDeleteTask = (id) => {
-    // dispatch(deleteTask(id));
+    dispatch(deleteTask({ id })).then((res) => {
+      dispatch(removeTask(res.payload?.data?._id));
+    });
   };
 
   return (
@@ -72,12 +82,13 @@ const UserDashboard = () => {
       <div className="bg-[#D1EDE1] p-4 rounded-md shadow">
         <h2 className="text-xl font-semibold mb-4">Task List</h2>
         <ul className="space-y-4">
-          {tasks.map((task) => (
+          {tasks?.map((task) => (
             <li
               key={task._id}
               className="bg-white p-4 rounded-md shadow flex justify-between items-center"
             >
-              {editingTaskId === task.id ? (
+              {/* {console.log(task)} */}
+              {editingTaskId === task._id ? (
                 <div className="flex-grow">
                   <input
                     type="text"
@@ -91,7 +102,7 @@ const UserDashboard = () => {
                     className="p-2 border rounded-md w-full focus:outline-none focus:ring focus:ring-[#1D7C53]"
                   ></textarea>
                   <button
-                    onClick={() => handleUpdateTask(task.id)}
+                    onClick={() => handleUpdateTask(task._id)}
                     className="bg-[#1D7C53] text-white px-4 py-2 rounded-md mt-2 hover:bg-[#166A42] transition"
                   >
                     Submit
@@ -112,7 +123,7 @@ const UserDashboard = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    setEditingTaskId(task.id);
+                    setEditingTaskId(task._id);
                     setEditingTitle(task.title);
                     setEditingDescription(task.description);
                   }}
@@ -121,7 +132,7 @@ const UserDashboard = () => {
                   Update
                 </button>
                 <button
-                  onClick={() => handleDeleteTask(task.id)}
+                  onClick={() => handleDeleteTask(task._id)}
                   className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
                 >
                   Delete

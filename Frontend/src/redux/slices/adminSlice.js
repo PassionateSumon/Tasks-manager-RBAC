@@ -13,9 +13,10 @@ const initialState = {
   moderatorCount: 0,
   totalTaskCount: 0,
 };
-const BASE_URL = import.meta.env.VITE_DEV_ENVIRONMENT === "true"
-  ? import.meta.env.VITE_DEV_SERVER
-  : import.meta.env.VITE_PRODUCTION_SERVER;
+const BASE_URL =
+  import.meta.env.VITE_DEV_ENVIRONMENT === "true"
+    ? import.meta.env.VITE_DEV_SERVER
+    : import.meta.env.VITE_PRODUCTION_SERVER;
 
 export const registerAdmin = createAsyncThunk(
   "admin/signup",
@@ -266,7 +267,8 @@ const adminSlice = createSlice({
         if (action.payload.code > 300) {
           state.error = action?.payload?.message;
         } else {
-          state.taskCount = action?.payload?.data?.length;
+          // console.log(action.payload);
+          state.totalTaskCount = action?.payload?.data?.length;
           state.error = "";
         }
       })

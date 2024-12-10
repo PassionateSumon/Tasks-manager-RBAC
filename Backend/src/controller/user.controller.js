@@ -85,6 +85,7 @@ exports.signin = async (req, res) => {
     }
 
     const { email, password } = req.body;
+    // console.log(req.body);
     const existedUser = await User.findOne({ email });
     if (!existedUser) {
       return res.status(403).json(new apiErrorHandler(403, "User not found"));

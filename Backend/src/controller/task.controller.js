@@ -8,7 +8,7 @@ exports.createTask = async (req, res) => {
   try {
     const userId = req?.user?.id;
     const { title, description } = req?.body;
-    console.log(req.body)
+    // console.log("task body: ",req.body)
 
     if (!userId) {
       return res.status(403).json(new apiErrorHandler(403, "Unauthorized"));
@@ -77,6 +77,16 @@ exports.updateTask = async (req, res) => {
     existedTask.title = title || existedTask.title;
     existedTask.description = description || existedTask.description;
     existedTask.status = status || existedTask.status;
+
+    const updatedTask = await existedTask.save();
+    if (!updatedTask) {
+      return res
+        .status(500)
+        .json(
+          new apiErrorHandler(500, "Task is not updated by internal error!")
+        );
+    }
+
     return res
       .status(200)
       .json(
@@ -96,6 +106,7 @@ exports.deleteTask = async (req, res) => {
     const userId = req?.user?.id;
     const requestedTaskId = req?.params?.t_id;
     const role = req?.role;
+    // console.log(userId, "-- ", requestedTaskId, "-- ", role);
     if (!userId) {
       return res
         .status(403)
@@ -343,6 +354,7 @@ exports.getAllTasksByRoles = async (req, res) => {
         break;
     }
     // console.log("5")
+    // console.log(getTasksForAdmin);
     if (role === process.env.ADMIN_ROLE) {
       return res
         .status(200)
@@ -399,7 +411,9 @@ exports.getTasksOfUser = async (req, res) => {
     ]);
     if (!person)
       return res.status(404).json(new apiErrorHandler(404, "Person not found"));
-    return res.status(200).json(new apiResponseHandler(200, "Tasks found", person));
+    return res
+      .status(200)
+      .json(new apiResponseHandler(200, "Tasks found", person));
   } catch (error) {
     return res
       .status(400)
