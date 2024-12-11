@@ -91,7 +91,7 @@ export const fetchTasks = createAsyncThunk(
 );
 export const updateTask = createAsyncThunk(
   "user/update-task",
-  async ({ id, title, description }, { rejectWithValue }) => {
+  async ({ id, title, description, status }, { rejectWithValue }) => {
     try {
       const response = await fetch(
         `${BASE_URL}/task/api/update-task/${Cookies.get("c_id")}/${id}/${
@@ -104,7 +104,7 @@ export const updateTask = createAsyncThunk(
             Authorization: Cookies.get("token"),
           },
           credentials: "include",
-          body: JSON.stringify({ title, description }),
+          body: JSON.stringify({ title, description, status }),
         }
       );
       const res = await response.json();
