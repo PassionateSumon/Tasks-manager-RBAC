@@ -19,7 +19,7 @@ const UserLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <Navbar onLogout={handleClick} user="User" />
+        <Navbar onLogout={handleClick}/>
         <main className="p-4 flex-1 overflow-y-auto">
           <Outlet />
         </main>

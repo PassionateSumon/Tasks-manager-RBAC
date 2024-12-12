@@ -159,9 +159,9 @@ exports.updateProfile = async (req, res) => {
   try {
     const { name, email, password } = req?.body;
     const userId = req.user?.id;
-    const userRole = req?.role;
     const loggedInuserId = req?.params?.id;
-    // console.log(userRole);
+    const userRole = req?.role;
+    // console.log(req.body);
     if (!loggedInuserId) {
       return res.status(401).json(new apiErrorHandler(401, "Unauthorized!"));
     }
@@ -187,7 +187,10 @@ exports.updateProfile = async (req, res) => {
     }
     if (name) user.name = name;
     if (email) user.email = email;
-    if (password) user.password = password;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
 
     const updatedUser = await user.save();
     if (!updatedUser) {

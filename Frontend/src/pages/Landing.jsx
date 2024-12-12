@@ -7,7 +7,7 @@ const Landing = () => {
       {/* Header */}
       <header className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">
-          Welcome to <span className="text-[#FE736D]">RBAC-UI</span>
+          Welcome to <span className="text-[#FE736D]">Task Manager - RBAC</span>
         </h1>
         <p className="text-lg text-gray-400">
           Simplify Role-Based Access Control with an intuitive interface.

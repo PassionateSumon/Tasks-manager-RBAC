@@ -16,6 +16,7 @@ import AdminLayout from "./pages/Admin/AdminLayout";
 import UserLayout from "./pages/User/UserLayout";
 import ModeratorLayout from "./pages/Moderator/ModeratorLayout";
 import UserDashboard from "./pages/User/UserDashboard";
+import UserProfile from "./pages/User/UserProfile";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -94,6 +95,7 @@ const App = () => {
         }
       >
         <Route path="user-dashboard" element={<UserDashboard />} />
+        <Route path="user-profile" element={<UserProfile />} />
       </Route>
 
       {/* moderator routes */}
