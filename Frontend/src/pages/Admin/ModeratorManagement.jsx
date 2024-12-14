@@ -7,9 +7,11 @@ import {
   removeMod,
   upgradeUserToAny,
 } from "../../redux/slices/adminSlice";
+import { useNavigate } from "react-router-dom";
 
 const ModeratorManagement = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const moderators = useSelector((state) => state.admin.moderators);
   const roles = useSelector((state) => state.admin.roles);
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -37,8 +39,12 @@ const ModeratorManagement = () => {
         dispatch(removeMod({ id: userId }));
       }
     });
-    setActiveDropdown(null); // Close dropdown after action
+    setActiveDropdown(null);
   };
+
+  const handleView = ({userId}) => {
+    navigate(`{userId}`);
+  }
 
   return (
     <div className="p-6 bg-[#2A2739] rounded-lg shadow-[0_2px_0px_rgba(245,66,152,0.3)]">
@@ -72,17 +78,22 @@ const ModeratorManagement = () => {
                       {moderator.permissions?.map((perm) => (
                         <li key={perm._id}>
                           {perm.task
-                            ? `task-${perm.task}`
+                            ? `Task - ${perm.task}`
                             : perm.profile
-                            ? `profile-${perm.profile}`
-                            : `role-${perm.role}`}
+                            ? `Profile - ${perm.profile}`
+                            : `Role - ${perm.role}`}
                         </li>
                       ))}
                     </ul>
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-4">
-                      {/* Delete Button */}
+                    <button
+                        onClick={() => handleView({userId: moderator._id})}
+                        className="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                      >
+                        View
+                      </button>
                       <button
                         onClick={() => handleDelete(moderator._id)}
                         className="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
@@ -90,7 +101,6 @@ const ModeratorManagement = () => {
                         Delete
                       </button>
 
-                      {/* Upgrade Button */}
                       <div className="relative">
                         <button
                           onClick={() => toggleDropdown(moderator._id)}

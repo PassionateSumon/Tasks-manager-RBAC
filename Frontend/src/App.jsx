@@ -21,6 +21,7 @@ import ModeratorTask from "./pages/Moderator/ModeratorTask";
 import ModeratorProfile from "./pages/Moderator/ModeratorProfile";
 import ModDashboard from "./pages/Moderator/ModDashboard";
 import UserDetailsWithTasks from "./components/UserDetailsWithTasks";
+import AdminProfile from "./pages/Admin/AdminProfile";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -81,6 +82,7 @@ const App = () => {
         <Route path="admin-dashboard" element={<AdminDashboard />} />
         <Route path="tasks" element={<AdminTask />} />
         <Route path="admin-control-users" element={<UserManagement />} />
+        <Route path="profile" element={<AdminProfile />} />
         <Route
           path="admin-control-users/:userId"
           element={<UserDetailsWithTasks />}
@@ -89,6 +91,7 @@ const App = () => {
           path="admin-control-moderators"
           element={<ModeratorManagement />}
         />
+        
         <Route path="admin-control-roles" element={<RoleManagement />} />
       </Route>
 

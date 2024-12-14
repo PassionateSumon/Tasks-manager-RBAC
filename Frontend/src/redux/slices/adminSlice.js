@@ -115,7 +115,7 @@ export const getAllTasks = createAsyncThunk(
 );
 export const deleteUser = createAsyncThunk(
   "admin/delete-user",
-  async (id, { rejectWithValue }) => {
+  async ({id}, { rejectWithValue }) => {
     try {
       const apiRes = await useApi(
         `users/api/delete-pro/${id}/${import.meta.env.VITE_PROFILE_DELETE}`,
