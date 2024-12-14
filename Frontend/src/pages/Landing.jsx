@@ -41,7 +41,7 @@ const Landing = () => {
       <footer className="mt-12 text-gray-500">
         <p>
           © {new Date().getFullYear()}{" "}
-          <span className="text-[#FE736D]">RBAC-UI</span>. All rights reserved.
+          <span className="text-[#FE736D]">Task Manager - RBAC</span>. All rights reserved.
         </p>
       </footer>
     </div>

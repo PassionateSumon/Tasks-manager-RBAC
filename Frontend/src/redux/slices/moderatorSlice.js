@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { useApi } from "../../utils/apiWrapper";
+import Cookies from "js-cookie";
 
 const initialState = {
   loading: false,
@@ -46,7 +47,35 @@ export const updateModeratorProfile = createAsyncThunk(
     }
   }
 );
+export const getAllUsers = createAsyncThunk(
+  "moderator/get-all-users",
+  async (_, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi("moderator/api/get-all-user-profile", "GET", {
+        headers: { Authorization: Cookies.get("token") },
+      });
 
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const getAllTasks = createAsyncThunk(
+  "moderator/get-all-tasks",
+  async (_, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi("task/api/get-all-tasks", "GET", {
+        headers: { Authorization: Cookies.get("token") },
+      });
+
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 const moderatorSlice = createSlice({
   name: "moderator",
   initialState,
@@ -82,6 +111,41 @@ const moderatorSlice = createSlice({
         }
       })
       .addCase(updateModeratorProfile.rejected, (state, action) => {
+        state.loading = true;
+        state.error = action.payload?.message || "An error occurred.";
+      })
+      .addCase(getAllUsers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAllUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.code > 300) {
+          state.error = action?.payload?.message;
+        } else {
+          // console.log(action.payload);
+          state.users = action?.payload?.data;
+          state.userCount = action?.payload?.data?.length;
+          state.error = "";
+        }
+      })
+      .addCase(getAllUsers.rejected, (state, action) => {
+        state.loading = true;
+        state.error = action.payload?.message || "An error occurred.";
+      })
+      .addCase(getAllTasks.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAllTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.code > 300) {
+          state.error = action?.payload?.message;
+        } else {
+          // console.log(action.payload);
+          state.taskCount = action?.payload?.data?.length;
+          state.error = "";
+        }
+      })
+      .addCase(getAllTasks.rejected, (state, action) => {
         state.loading = true;
         state.error = action.payload?.message || "An error occurred.";
       });

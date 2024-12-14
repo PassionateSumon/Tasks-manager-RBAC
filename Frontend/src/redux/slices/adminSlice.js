@@ -130,7 +130,6 @@ export const deleteUser = createAsyncThunk(
     }
   }
 );
-// here deleteMod is also having
 export const deleteMod = createAsyncThunk(
   "admin/delete-mod",
   async (id, { rejectWithValue }) => {
@@ -187,6 +186,13 @@ const adminSlice = createSlice({
       state.moderators = state.moderators.filter(
         (user) => user._id !== action.payload.id
       );
+    },
+    updateUserRoleInState: (state, action) => {
+      const { id, role } = action.payload;
+      const userIndex = state.users.findIndex((user) => user._id === id);
+      if (userIndex !== -1) {
+        state.users[userIndex].role = role;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -284,9 +290,8 @@ const adminSlice = createSlice({
         if (action.payload.code > 300) {
           state.error = action?.payload?.message;
         } else {
-          state.users = state.users.filter(
-            (user) => user._id !== action?.payload?.data?._id
-          );
+          console.log(action.payload?.data);
+
           state.error = "";
         }
       })
@@ -322,5 +327,5 @@ const adminSlice = createSlice({
       });
   },
 });
-export const { removeUser, removeMod } = adminSlice.actions;
+export const { removeUser, removeMod, updateUserRoleInState } = adminSlice.actions;
 export default adminSlice;

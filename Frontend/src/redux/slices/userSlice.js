@@ -25,41 +25,11 @@ export const createUser = createAsyncThunk(
     }
   }
 );
-export const updateUserProfile = createAsyncThunk(
-  "user/update-pro",
-  async ({ name, email, id }, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/users/api/update-pro/${id}/${
-          import.meta.env.VITE_PROFILE_UPDATE
-        }`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: Cookies.get("token"),
-          },
-          credentials: "include",
-          body: JSON.stringify({ name, email }),
-        }
-      );
-      const res = await response.json();
-      return res;
-    } catch (error) {
-      return rejectWithValue(error);
-    }
-  }
-);
 
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {
-    updateUserPro: (state, action) => {
-      state.user.name = action.payload.name;
-      state.user.email = action.payload.email;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(createUser.pending, (state) => {
@@ -75,22 +45,6 @@ const userSlice = createSlice({
         }
       })
       .addCase(createUser.rejected, (state, action) => {
-        state.loading = true;
-        state.error = action.payload?.message || "An error occurred.";
-      })
-      .addCase(updateUserProfile.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(updateUserProfile.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload.code > 300) {
-          state.error = action?.payload?.message;
-        } else {
-          state.user = action?.payload?.data;
-          state.error = "";
-        }
-      })
-      .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = true;
         state.error = action.payload?.message || "An error occurred.";
       });

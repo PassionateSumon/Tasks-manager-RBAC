@@ -9,6 +9,7 @@ const {
 } = require("../controller/moderator.controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 const { verifyRoleAndPermission } = require("../middleware/role.middleware");
+const { getAllUsersProfiles } = require("../controller/user.controller");
 
 const router = express.Router();
 
@@ -32,5 +33,10 @@ router.get(
   verifyRoleAndPermission,
   asyncFuncHandler(getUserProfile)
 );
+router.get(
+  "/api/get-all-user-profile",
+  verifyToken,
+  asyncFuncHandler(getAllUsersProfiles)
+); // get all profiles of users
 
 module.exports = router;

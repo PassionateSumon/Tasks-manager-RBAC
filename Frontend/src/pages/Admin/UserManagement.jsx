@@ -10,22 +10,19 @@ import {
 
 const UserManagement = () => {
   const dispatch = useDispatch();
-  const users = useSelector((state) => state.admin.users); // List of users from Redux store
-  const roles = useSelector((state) => state.admin.roles); // List of roles from Redux store
-  const [activeDropdown, setActiveDropdown] = useState(null); // State to track dropdown visibility
+  const users = useSelector((state) => state.admin.users);
+  const roles = useSelector((state) => state.admin.roles);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Fetch users and roles on component mount
   useEffect(() => {
     dispatch(getAllUsers());
     dispatch(getAllRoles());
   }, [dispatch]);
 
-  // Toggle dropdown visibility
   const toggleDropdown = (userId) => {
     setActiveDropdown((prev) => (prev === userId ? null : userId));
   };
 
-  // Dummy handlers for button actions
   const handleDelete = (userId) => {
     dispatch(deleteUser(userId)).then((res) => {
       if (res.payload.code < 300) {
@@ -41,8 +38,8 @@ const UserManagement = () => {
         dispatch(removeUser({ id: userId }));
       }
     });
-    console.log(`Upgrade user with ID: ${userId} to Role ID: ${roleId}`);
-    setActiveDropdown(null); // Close dropdown after selecting role
+    // console.log(`Upgrade user with ID: ${userId} to Role ID: ${roleId}`);
+    setActiveDropdown(null);
   };
 
   return (

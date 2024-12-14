@@ -17,6 +17,11 @@ import UserLayout from "./pages/User/UserLayout";
 import ModeratorLayout from "./pages/Moderator/ModeratorLayout";
 import UserDashboard from "./pages/User/UserDashboard";
 import UserProfile from "./pages/User/UserProfile";
+import AdminTask from "./pages/Admin/AdminTask";
+import UserTask from "./pages/User/UserTask";
+import ModeratorTask from "./pages/Moderator/ModeratorTask";
+import ModeratorProfile from "./pages/Moderator/ModeratorProfile";
+import ModDashboard from "./pages/Moderator/ModDashboard";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -75,6 +80,7 @@ const App = () => {
         }
       >
         <Route path="admin-dashboard" element={<AdminDashboard />} />
+        <Route path="tasks" element={<AdminTask />} />
         <Route path="admin-control-users" element={<UserManagement />} />
         <Route
           path="admin-control-moderators"
@@ -95,7 +101,8 @@ const App = () => {
         }
       >
         <Route path="user-dashboard" element={<UserDashboard />} />
-        <Route path="user-profile" element={<UserProfile />} />
+        <Route path="tasks" element={<UserTask />} />
+        <Route path="profile" element={<UserProfile />} />
       </Route>
 
       {/* moderator routes */}
@@ -109,7 +116,9 @@ const App = () => {
           )
         }
       >
-        {" "}
+        <Route path="tasks" element={<ModeratorTask />} />
+        <Route path="profile" element={<ModeratorProfile />} />
+        <Route path="moderator-dashboard" element={<ModDashboard />} />
       </Route>
     </Routes>
   );

@@ -12,7 +12,7 @@ const Sidebar = () => {
     admin: [
       {
         name: "Dashboard",
-        path: "admin-dashboard", // Updated path for proper navigation
+        path: "admin-dashboard",
         icon: <FiHome className="text-xl" />,
       },
       {
@@ -25,6 +25,11 @@ const Sidebar = () => {
         path: "admin-control-moderators",
         icon: <FiUsers className="text-xl" />,
       },
+      {
+        name: "Tasks",
+        path: "tasks",
+        icon: <FiUsers className="text-xl" />,
+      },
     ],
     moderator: [
       {
@@ -32,12 +37,22 @@ const Sidebar = () => {
         path: "moderator-dashboard",
         icon: <FiHome className="text-xl" />,
       },
+      {
+        name: "Tasks",
+        path: "tasks",
+        icon: <FiUsers className="text-xl" />,
+      },
     ],
     user: [
       {
         name: "Dashboard",
         path: "user-dashboard",
         icon: <FiHome className="text-xl" />,
+      },
+      {
+        name: "Tasks",
+        path: "tasks",
+        icon: <FiUsers className="text-xl" />,
       },
     ],
   };
@@ -48,7 +63,9 @@ const Sidebar = () => {
   return (
     <div className="bg-[#2A2739] text-[#E6E1FF] w-64 h-full p-4 flex flex-col shadow-[0_4px_15px_rgba(245,66,152,0.3)]">
       {/* Header */}
-      <h1 className="text-2xl font-bold mb-6">{currRole.toUpperCase()} PANEL</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {currRole.toUpperCase()} PANEL
+      </h1>
 
       {/* Sidebar Items */}
       <ul className="space-y-4">

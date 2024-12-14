@@ -1,9 +1,9 @@
 import React from "react";
 import Profile from "../../components/Profile";
-import { useDispatch } from "react-redux";
 import { updateUserPro, updateUserProfile } from "../../redux/slices/authSlice";
+import { useDispatch } from "react-redux";
 
-const UserProfile = () => {
+const ModeratorProfile = () => {
   const dispatch = useDispatch();
   const handleProfileUpdate = ({ data, id }) => {
     console.log(data);
@@ -18,4 +18,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile;
+export default ModeratorProfile;

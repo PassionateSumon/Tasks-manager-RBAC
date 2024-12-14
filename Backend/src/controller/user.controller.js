@@ -6,6 +6,7 @@ const Role = require("../models/role.model");
 const apiErrorHandler = require("../utils/apiErrorHandler.util");
 const apiResponseHandler = require("../utils/apiResponseHandler.util");
 const mongoose = require("mongoose");
+const Task = require("../models/task.model");
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.signup = async (req, res) => {
@@ -157,7 +158,7 @@ exports.signin = async (req, res) => {
 };
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, password } = req?.body;
+    const { name, email } = req?.body;
     const userId = req.user?.id;
     const loggedInuserId = req?.params?.id;
     const userRole = req?.role;
@@ -187,12 +188,9 @@ exports.updateProfile = async (req, res) => {
     }
     if (name) user.name = name;
     if (email) user.email = email;
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user.password = hashedPassword;
-    }
 
     const updatedUser = await user.save();
+    // console.log(updatedUser);
     if (!updatedUser) {
       return res
         .status(500)
@@ -201,14 +199,7 @@ exports.updateProfile = async (req, res) => {
 
     return res
       .status(200)
-      .json(
-        new apiResponseHandler(
-          200,
-          "Updated successfully.",
-          updatedUser,
-          userRole
-        )
-      );
+      .json(new apiResponseHandler(200, "Updated successfully.", updatedUser));
   } catch (error) {
     return res
       .status(400)
@@ -243,12 +234,18 @@ exports.deleteProfile = async (req, res) => {
       return res.status(404).json({ message: "Not found user!" });
     }
 
-    // Here i don't have to check whether he is user/admin/moderator
-    // it can be done via role-middleware in route
-    // so it's sure that who is here either user/admin
+    const deletedTasks = await Task.deleteMany({
+      owner: new mongoose.Types.ObjectId(deleteUserId),
+    });
+    if (!deletedTasks) {
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "Tasks not deleted!"));
+    }
 
-    const deletedUser = await User?.findByIdAndDelete(deleteUserId);
-    if (!deletedUser) {
+    const deletedUser = await userToDelete.deleteOne();
+    // console.log(deletedUser);
+    if (!deletedUser.acknowledged || deletedUser.deletedCount === 0) {
       return res
         .status(500)
         .json(new apiErrorHandler(500, "User not deleted!"));

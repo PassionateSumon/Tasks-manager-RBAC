@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { CiLight } from "react-icons/ci";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const Profile = ({ onUpdateProfile }) => {
   const user = useSelector((state) => state.auth.user);
@@ -27,21 +27,23 @@ const Profile = ({ onUpdateProfile }) => {
   const handleSubmit = () => {
     if (onUpdateProfile) {
       onUpdateProfile({
-        name: editableName,
-        email: editableEmail,
+        data: {
+          name: editableName,
+          email: editableEmail,
+        },
         id: user._id,
       });
     }
     setIsEditing(false);
   };
 
-  // console.log(user);
+  console.log(user);
 
   return (
     <div className="bg-[#2A2739] text-[#E6E1FF] shadow-[0_2px_0px_rgba(245,66,152,0.3)] p-8 rounded-lg max-w-lg mx-auto space-y-6">
       <div className="text-center">
         <h2 className="text-4xl font-bold mb-2">
-          {user?.roles[0].name.toUpperCase()} PROFILE
+          {user?.roles?.[0]?.name.toUpperCase()} PROFILE
         </h2>
         <p className="text-lg text-gray-400">
           Detailed information about the user
