@@ -70,13 +70,13 @@ const TasksCRUD = () => {
             value={taskTitle}
             onChange={(e) => setTaskTitle(e.target.value)}
             placeholder="Task Title"
-            className="p-2 border rounded-md focus:outline-none focus:ring focus:ring-[#F54298] bg-[#2A2739] text-[#E6E1FF]"
+            className="p-2 border border-[#ff007b] rounded-md focus:outline-none focus:ring focus:ring-[#F54298] bg-[#2A2739] text-[#E6E1FF]"
           />
           <textarea
             value={taskDescription}
             onChange={(e) => setTaskDescription(e.target.value)}
             placeholder="Task Description"
-            className="p-2 border rounded-md focus:outline-none focus:ring focus:ring-[#F54298] bg-[#2A2739] text-[#E6E1FF]"
+            className="p-2 border border-[#ff007b] rounded-md focus:outline-none focus:ring focus:ring-[#F54298] bg-[#2A2739] text-[#E6E1FF]"
           ></textarea>
           <button
             onClick={handleCreateTask}
@@ -94,7 +94,11 @@ const TasksCRUD = () => {
           {tasks?.map((task) => (
             <li
               key={task._id}
-              className="bg-[#1E1B2D] p-4 rounded-md shadow flex justify-between items-center"
+              className={`p-4 rounded-md shadow flex justify-between items-center 
+              ${task.status === "complete" ? "border-2 border-green-500" : ""}
+              ${task.status === "active" ? "border-2 border-blue-500" : ""}
+              ${task.status === "inactive" ? "border-2 border-gray-500" : ""}
+              ${editingTaskId === task._id ? "border-yellow-500" : ""}`}
             >
               {editingTaskId === task._id ? (
                 <div className="flex-grow">
@@ -132,8 +136,14 @@ const TasksCRUD = () => {
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-grow items-center justify-evenly ">
-                  <div className="">
+                <div
+                  className={`flex flex-grow items-center justify-between ${
+                    task.status === "inactive"
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }`}
+                >
+                  <div>
                     <h3 className="text-lg font-semibold text-[#E6E1FF]">
                       {task.title}
                     </h3>
@@ -145,27 +155,29 @@ const TasksCRUD = () => {
                   </p>
                 </div>
               )}
-              {editingTaskId !== task._id && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setEditingTaskId(task._id);
-                      setEditingTitle(task.title);
-                      setEditingDescription(task.description);
-                      setEditingStatus(task.status);
-                    }}
-                    className="bg-blue-500 text-[#E6E1FF] px-4 py-2 rounded-md hover:bg-blue-600 transition"
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task._id)}
-                    className="bg-red-500 text-[#E6E1FF] px-4 py-2 rounded-md hover:bg-red-600 transition"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
+              <div className="flex gap-2 pl-4">
+                {editingTaskId !== task._id && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditingTaskId(task._id);
+                        setEditingTitle(task.title);
+                        setEditingDescription(task.description);
+                        setEditingStatus(task.status);
+                      }}
+                      className="bg-blue-500 text-[#E6E1FF] px-4 py-2 rounded-md hover:bg-blue-600 transition"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTask(task._id)}
+                      className="bg-red-500 text-[#E6E1FF] px-4 py-2 rounded-md hover:bg-red-600 transition"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
             </li>
           ))}
         </ul>

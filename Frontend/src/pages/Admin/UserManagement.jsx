@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   deleteUser,
   getAllRoles,
@@ -13,6 +14,7 @@ const UserManagement = () => {
   const users = useSelector((state) => state.admin.users);
   const roles = useSelector((state) => state.admin.roles);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(getAllUsers());
@@ -29,7 +31,6 @@ const UserManagement = () => {
         dispatch(removeUser({ id: userId }));
       }
     });
-    // console.log(`Delete user with ID: ${userId}`);
   };
 
   const handleUpgrade = (userId, roleId) => {
@@ -38,18 +39,18 @@ const UserManagement = () => {
         dispatch(removeUser({ id: userId }));
       }
     });
-    // console.log(`Upgrade user with ID: ${userId} to Role ID: ${roleId}`);
     setActiveDropdown(null);
+  };
+
+  const handleViewDetails = (userId) => {
+    navigate(`${userId}`);
   };
 
   return (
     <div className="p-6 bg-[#2A2739] rounded-lg shadow-[0_2px_0px_rgba(245,66,152,0.3)]">
-      {/* Page Title */}
       <h1 className="text-2xl font-bold mb-6 text-[#E6E1FF]">
         User Management
       </h1>
-
-      {/* User Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[#E6E1FF]">
           <thead className="bg-[#1E1B29]">
@@ -70,37 +71,38 @@ const UserManagement = () => {
                   <td className="py-4 px-6">{user.email}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-4">
-                      {/* Delete Button */}
+                      <button
+                        onClick={() => handleViewDetails(user._id)}
+                        className="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                      >
+                        View
+                      </button>
                       <button
                         onClick={() => handleDelete(user._id)}
                         className="text-sm px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
                       >
                         Delete
                       </button>
-
-                      {/* Upgrade Button */}
                       <div className="relative">
                         <button
                           onClick={() => toggleDropdown(user._id)}
-                          className="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+                          className="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md"
                         >
                           Change
                         </button>
-
-                        {/* Dropdown Menu */}
                         {activeDropdown === user._id && (
-                          <div className="absolute top-12 left-0 bg-[#1E1B29] text-[#E6E1FF] shadow-[0_2px_0px_rgba(245,66,152,0.3)] rounded-lg p-2 space-y-2 z-10">
+                          <div className="absolute left-full top-0 ml-2 bg-[#1E1B29] text-[#E6E1FF] shadow-lg rounded-md w-48">
                             {roles?.map((role) => (
                               <button
                                 key={role._id}
                                 onClick={() =>
                                   handleUpgrade(user._id, role._id)
                                 }
-                                className={`text-sm px-4 py-2 ${
+                                className={`block w-full text-left px-4 py-2 rounded-md hover:bg-[#2A2739] transition ${
                                   role.name === "admin"
-                                    ? "bg-green-500 hover:bg-green-600"
-                                    : "bg-yellow-500 hover:bg-yellow-600"
-                                } text-white rounded-lg w-full text-left`}
+                                    ? "text-green-400 hover:text-green-500"
+                                    : "text-yellow-400 hover:text-yellow-500"
+                                }`}
                               >
                                 {role.name.charAt(0).toUpperCase() +
                                   role.name.slice(1)}

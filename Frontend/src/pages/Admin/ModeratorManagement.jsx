@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   deleteMod,
-  deleteUser,
   getAllMods,
   getAllRoles,
   removeMod,
@@ -11,22 +10,19 @@ import {
 
 const ModeratorManagement = () => {
   const dispatch = useDispatch();
-  const moderators = useSelector((state) => state.admin.moderators); // Moderators from Redux store
-  const roles = useSelector((state) => state.admin.roles); // Roles from Redux store
-  const [activeDropdown, setActiveDropdown] = useState(null); // State to track dropdown visibility
+  const moderators = useSelector((state) => state.admin.moderators);
+  const roles = useSelector((state) => state.admin.roles);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Fetch moderators and roles on component mount
   useEffect(() => {
     dispatch(getAllMods());
     dispatch(getAllRoles());
   }, [dispatch]);
 
-  // Toggle dropdown visibility
   const toggleDropdown = (userId) => {
     setActiveDropdown((prev) => (prev === userId ? null : userId));
   };
 
-  // Delete user action
   const handleDelete = (userId) => {
     dispatch(deleteMod(userId)).then((res) => {
       if (res.payload.code < 300) {
@@ -35,7 +31,6 @@ const ModeratorManagement = () => {
     });
   };
 
-  // Upgrade user role action
   const handleUpgrade = (userId, roleId) => {
     dispatch(upgradeUserToAny({ u_id: userId, r_id: roleId })).then((res) => {
       if (res.payload.code < 300) {
@@ -99,25 +94,23 @@ const ModeratorManagement = () => {
                       <div className="relative">
                         <button
                           onClick={() => toggleDropdown(moderator._id)}
-                          className="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+                          className="text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md"
                         >
                           Change
                         </button>
-
-                        {/* Dropdown Menu */}
                         {activeDropdown === moderator._id && (
-                          <div className="absolute top-12 left-0 bg-[#1E1B29] text-[#E6E1FF] shadow-[0_2px_0px_rgba(245,66,152,0.3)] rounded-lg p-2 space-y-2 z-10">
+                          <div className="absolute left-full top-0 ml-2 bg-[#1E1B29] text-[#E6E1FF] shadow-lg rounded-md w-48">
                             {roles?.map((role) => (
                               <button
                                 key={role._id}
                                 onClick={() =>
                                   handleUpgrade(moderator._id, role._id)
                                 }
-                                className={`text-sm px-4 py-2 ${
+                                className={`block w-full text-left px-4 py-2 rounded-md hover:bg-[#2A2739] transition ${
                                   role.name === "admin"
-                                    ? "bg-green-500 hover:bg-green-600"
-                                    : "bg-yellow-500 hover:bg-yellow-600"
-                                } text-white rounded-lg w-full text-left`}
+                                    ? "text-green-400 hover:text-green-500"
+                                    : "text-yellow-400 hover:text-yellow-500"
+                                }`}
                               >
                                 {role.name.charAt(0).toUpperCase() +
                                   role.name.slice(1)}

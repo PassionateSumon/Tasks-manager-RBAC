@@ -16,6 +16,7 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
       return res.status(400).json(new apiErrorHandler(400, "Action not found"));
     const decodedActionType = action?.split("_")[0]; //profile, task, role
     const decodedAction = `${action?.split("_")[1]}:${action?.split("_")[2]}`; //update, delete, read
+    // console.log(decodedActionType, decodedAction);
     if (!currLoggedInPerson)
       return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
     const user = await User.findById(currLoggedInPerson);
@@ -42,10 +43,12 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
         .json(new apiErrorHandler(500, "Issue in aggregating user with role"));
 
     //loggedin
-    const currUserWithRoleName = currUserWithRole[0].userRole[0].name;
+    const currUserWithRoleName = currUserWithRole[0]?.userRole[0]?.name;
+    // console.log(currUserWithRoleName)
 
     //now I have role of loggedin person, let's check if he is higher than req.params or not
     // <------------ check role of the requested person ------------>
+    // console.log(req.params.id);
     const requestedPersonRole = await User.aggregate([
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.id) },
@@ -59,7 +62,9 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
         },
       },
     ]);
-    const requestedPersonRoleName = requestedPersonRole[0].userRole[0].name;
+    // console.log(requestedPersonRole)
+    const requestedPersonRoleName = requestedPersonRole?.[0]?.userRole?.[0]?.name;
+    // console.log(requestedPersonRoleName);
 
     switch (currUserWithRoleName) {
       case process.env.ADMIN_ROLE:

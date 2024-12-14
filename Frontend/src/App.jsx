@@ -2,11 +2,9 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Cookies from "js-cookie";
-
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import Landing from "./pages/Landing";
-
 import { verifyToken } from "./redux/slices/authSlice";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import UserManagement from "./pages/Admin/UserManagement";
@@ -22,6 +20,7 @@ import UserTask from "./pages/User/UserTask";
 import ModeratorTask from "./pages/Moderator/ModeratorTask";
 import ModeratorProfile from "./pages/Moderator/ModeratorProfile";
 import ModDashboard from "./pages/Moderator/ModDashboard";
+import UserDetailsWithTasks from "./components/UserDetailsWithTasks";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -82,6 +81,10 @@ const App = () => {
         <Route path="admin-dashboard" element={<AdminDashboard />} />
         <Route path="tasks" element={<AdminTask />} />
         <Route path="admin-control-users" element={<UserManagement />} />
+        <Route
+          path="admin-control-users/:userId"
+          element={<UserDetailsWithTasks />}
+        />
         <Route
           path="admin-control-moderators"
           element={<ModeratorManagement />}

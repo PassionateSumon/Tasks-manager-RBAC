@@ -17,7 +17,7 @@ const { getAllUsersProfiles } = require("../controller/user.controller");
 const {
   getAllModeratorsProfiles,
 } = require("../controller/moderator.controller");
-const { getAllTasksByRoles } = require("../controller/task.controller");
+const { getAllTasksByRoles, getTasksOfUser } = require("../controller/task.controller");
 const router = express.Router();
 
 router.post("/api/signup", asyncFuncHandler(signup));

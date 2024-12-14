@@ -172,6 +172,44 @@ export const upgradeUserToAny = createAsyncThunk(
     }
   }
 );
+export const getSingleUserDetails = createAsyncThunk(
+  "users/get-single-user",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi(
+        `users/api/get-user-profile/${id}/${import.meta.env.VITE_PROFILE_READ}`,
+        "GET",
+        {
+          headers: { Authorization: Cookies.get("token") },
+        }
+      );
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+export const getSingleUserTasks = createAsyncThunk(
+  "user/fetch-tasks",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi(
+        `task/api/get-tasks-by-actual-person/${id}/${
+          import.meta.env.VITE_TASK_READ
+        }`,
+        "GET",
+        {
+          headers: {
+            Authorization: Cookies.get("token"),
+          },
+        }
+      );
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 
 const adminSlice = createSlice({
   name: "admin",
@@ -327,5 +365,6 @@ const adminSlice = createSlice({
       });
   },
 });
-export const { removeUser, removeMod, updateUserRoleInState } = adminSlice.actions;
+export const { removeUser, removeMod, updateUserRoleInState } =
+  adminSlice.actions;
 export default adminSlice;

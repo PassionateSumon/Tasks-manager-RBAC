@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FiHome, FiUsers, FiSettings } from "react-icons/fi";
 import { useSelector } from "react-redux";
+import { MdOutlineTaskAlt } from "react-icons/md";
 
 const Sidebar = () => {
   // Fetch the current role from Redux
@@ -28,7 +29,7 @@ const Sidebar = () => {
       {
         name: "Tasks",
         path: "tasks",
-        icon: <FiUsers className="text-xl" />,
+        icon: <MdOutlineTaskAlt className="text-xl" />,
       },
     ],
     moderator: [
@@ -40,7 +41,7 @@ const Sidebar = () => {
       {
         name: "Tasks",
         path: "tasks",
-        icon: <FiUsers className="text-xl" />,
+        icon: <MdOutlineTaskAlt className="text-xl" />,
       },
     ],
     user: [
@@ -52,7 +53,7 @@ const Sidebar = () => {
       {
         name: "Tasks",
         path: "tasks",
-        icon: <FiUsers className="text-xl" />,
+        icon: <MdOutlineTaskAlt className="text-xl" />,
       },
     ],
   };

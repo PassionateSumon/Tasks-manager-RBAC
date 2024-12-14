@@ -9,12 +9,10 @@ import {
 const AdminDashboard = () => {
   const dispatch = useDispatch();
 
-  // Fetching the stats from the Redux store
   const { userCount, moderatorCount, totalTaskCount } = useSelector(
     (state) => state.admin
   );
 
-  // Dispatching the action to fetch data
   useEffect(() => {
     dispatch(getAllUsers());
     dispatch(getAllMods());

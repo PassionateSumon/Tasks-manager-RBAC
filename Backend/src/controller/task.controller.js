@@ -411,6 +411,7 @@ exports.getTasksOfUser = async (req, res) => {
     ]);
     if (!person)
       return res.status(404).json(new apiErrorHandler(404, "Person not found"));
+    // console.log("person tasks: ", person);
     return res
       .status(200)
       .json(new apiResponseHandler(200, "Tasks found", person));
