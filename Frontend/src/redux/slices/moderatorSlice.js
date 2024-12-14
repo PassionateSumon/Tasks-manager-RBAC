@@ -61,7 +61,6 @@ export const getAllUsers = createAsyncThunk(
     }
   }
 );
-
 export const getAllTasks = createAsyncThunk(
   "moderator/get-all-tasks",
   async (_, { rejectWithValue }) => {
@@ -76,6 +75,50 @@ export const getAllTasks = createAsyncThunk(
     }
   }
 );
+export const deleteUser = createAsyncThunk(
+  "admin/delete-user",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi(
+        `users/api/delete-pro/${id}/${import.meta.env.VITE_PROFILE_DELETE}`,
+        "DELETE",
+        {
+          headers: { Authorization: Cookies.get("token") },
+        }
+      );
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+export const upgradeUserToAny = createAsyncThunk(
+  "admin/upgrade-user-to-mod",
+  async ({ u_id, r_id }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/api/update-person-role-by-admin/${u_id}/${
+          import.meta.env.VITE_ROLE_UPDATE
+        }`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: Cookies.get("token"),
+          },
+          credentials: "include",
+          body: JSON.stringify({ roleId: r_id }),
+        }
+      );
+      const res = await response.json();
+      return res;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+
 const moderatorSlice = createSlice({
   name: "moderator",
   initialState,
@@ -95,7 +138,7 @@ const moderatorSlice = createSlice({
         }
       })
       .addCase(createModerator.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(updateModeratorProfile.pending, (state) => {
@@ -107,11 +150,11 @@ const moderatorSlice = createSlice({
           state.error = action?.payload?.message;
         } else {
           state.updated_moderator = action?.payload?.data;
-          state.user = action?.payload?.data;
+          state.error = "";
         }
       })
       .addCase(updateModeratorProfile.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(getAllUsers.pending, (state) => {
@@ -129,7 +172,7 @@ const moderatorSlice = createSlice({
         }
       })
       .addCase(getAllUsers.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(getAllTasks.pending, (state) => {
@@ -146,7 +189,7 @@ const moderatorSlice = createSlice({
         }
       })
       .addCase(getAllTasks.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       });
   },

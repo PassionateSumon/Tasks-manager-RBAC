@@ -9,6 +9,7 @@ const initialState = {
   users: [],
   moderators: [],
   roles: [],
+  allPermissions: [],
   userCount: 0,
   moderatorCount: 0,
   totalTaskCount: 0,
@@ -115,7 +116,7 @@ export const getAllTasks = createAsyncThunk(
 );
 export const deleteUser = createAsyncThunk(
   "admin/delete-user",
-  async ({id}, { rejectWithValue }) => {
+  async ({ id }, { rejectWithValue }) => {
     try {
       const apiRes = await useApi(
         `users/api/delete-pro/${id}/${import.meta.env.VITE_PROFILE_DELETE}`,
@@ -132,7 +133,7 @@ export const deleteUser = createAsyncThunk(
 );
 export const deleteMod = createAsyncThunk(
   "admin/delete-mod",
-  async (id, { rejectWithValue }) => {
+  async ({ id }, { rejectWithValue }) => {
     try {
       const apiRes = await useApi(
         `moderator/api/delete-pro/${id}/${import.meta.env.VITE_PROFILE_DELETE}`,
@@ -210,6 +211,63 @@ export const getSingleUserTasks = createAsyncThunk(
     }
   }
 );
+export const getSingleModDetails = createAsyncThunk(
+  "moderator/get-single-user",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi(
+        `moderator/api/get-user-profile/${id}/${
+          import.meta.env.VITE_PROFILE_READ
+        }`,
+        "GET",
+        {
+          headers: { Authorization: Cookies.get("token") },
+        }
+      );
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+export const getAllPermissionsByRole = createAsyncThunk(
+  "admin/get-all-permissions",
+  async (_, { rejectWithValue }) => {
+    try {
+      const apiRes = await useApi("admin/api/get-all-users-permission", "GET", {
+        headers: { Authorization: Cookies.get("token") },
+      });
+      return apiRes;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+export const changePermissions = createAsyncThunk(
+  "admin/update-permissions",
+  async ({ roleId, permissions }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/admin/api/change-permissions-moderator/${
+          import.meta.env.VITE_ROLE_UPDATE
+        }`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: Cookies.get("token"),
+          },
+          credentials: "include",
+          body: JSON.stringify({ roleId, permissions }),
+        }
+      );
+      const res = await response.json();
+      return res;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 
 const adminSlice = createSlice({
   name: "admin",
@@ -248,7 +306,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(registerAdmin.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(updateAdminProfile.pending, (state) => {
@@ -264,7 +322,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(updateAdminProfile.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(getAllUsers.pending, (state) => {
@@ -282,7 +340,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(getAllUsers.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(getAllMods.pending, (state) => {
@@ -300,7 +358,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(getAllMods.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(getAllTasks.pending, (state) => {
@@ -317,7 +375,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(getAllTasks.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(deleteUser.pending, (state) => {
@@ -334,7 +392,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(deleteUser.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(upgradeUserToAny.pending, (state) => {
@@ -349,7 +407,7 @@ const adminSlice = createSlice({
         }
       })
       .addCase(upgradeUserToAny.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
       .addCase(getAllRoles.pending, (state, action) => {
@@ -360,7 +418,24 @@ const adminSlice = createSlice({
         state.roles = action?.payload?.data;
       })
       .addCase(getAllRoles.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action?.payload?.message || "An error occurred.";
+      })
+      .addCase(getAllPermissionsByRole.pending, (state, action) => {
         state.loading = true;
+      })
+      .addCase(getAllPermissionsByRole.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action?.payload?.code > 300) {
+          state.error = action?.payload?.message;
+        } else {
+          // console.log(action.payload);
+          state.allPermissions = action?.payload?.data;
+          state.error = "";
+        }
+      })
+      .addCase(getAllPermissionsByRole.rejected, (state, action) => {
+        state.loading = false;
         state.error = action?.payload?.message || "An error occurred.";
       });
   },

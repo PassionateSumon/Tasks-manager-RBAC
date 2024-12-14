@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FiHome, FiUsers, FiSettings } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { MdOutlineTaskAlt } from "react-icons/md";
+import { FaCodePullRequest } from "react-icons/fa6";
 
 const Sidebar = () => {
   // Fetch the current role from Redux
@@ -27,6 +28,11 @@ const Sidebar = () => {
         icon: <FiUsers className="text-xl" />,
       },
       {
+        name: "Permission Management",
+        path: "permissions",
+        icon: <FaCodePullRequest className="text-xl" />,
+      },
+      {
         name: "Tasks",
         path: "tasks",
         icon: <MdOutlineTaskAlt className="text-xl" />,
@@ -37,6 +43,11 @@ const Sidebar = () => {
         name: "Dashboard",
         path: "moderator-dashboard",
         icon: <FiHome className="text-xl" />,
+      },
+      {
+        name: "User Management",
+        path: "moderator-control-users",
+        icon: <FiUsers className="text-xl" />,
       },
       {
         name: "Tasks",

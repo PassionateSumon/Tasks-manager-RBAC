@@ -61,7 +61,7 @@ router.get(
   asyncFuncHandler(getAllRoles)
 );
 router.put(
-  "/api/change-permissions-moderator",
+  "/api/change-permissions-moderator/:actionType",
   verifyToken,
   verifyRoleAndPermission,
   asyncFuncHandler(changePermissionsOfModeratorByAdmin)

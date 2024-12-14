@@ -42,9 +42,9 @@ const ModeratorManagement = () => {
     setActiveDropdown(null);
   };
 
-  const handleView = ({userId}) => {
-    navigate(`{userId}`);
-  }
+  const handleView = (modId) => {
+    navigate(`${modId}`);
+  };
 
   return (
     <div className="p-6 bg-[#2A2739] rounded-lg shadow-[0_2px_0px_rgba(245,66,152,0.3)]">
@@ -88,8 +88,8 @@ const ModeratorManagement = () => {
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-4">
-                    <button
-                        onClick={() => handleView({userId: moderator._id})}
+                      <button
+                        onClick={() => handleView(moderator._id)}
                         className="text-sm px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
                       >
                         View

@@ -408,28 +408,37 @@ exports.getAllPermissionsByRole = async (req, res) => {
         break;
     }
 
-    if (roleName === process.env.ADMIN_ROLE)
+    if (roleName === process.env.ADMIN_ROLE) {
       return res
         .status(200)
         .json(
-          new apiResponse(200, "Permissions found", allRolePermissionsForAdmin)
+          new apiResponseHandler(
+            200,
+            "Permissions found",
+            allRolePermissionsForAdmin
+          )
         );
-    if (roleName === process.env.MODERATOR_ROLE)
+    } else if (roleName === process.env.MODERATOR_ROLE) {
       return res
         .status(200)
         .json(
-          new apiResponse(
+          new apiResponseHandler(
             200,
             "Permissions found",
             allRolePermissionsForModerator
           )
         );
-    if (roleName === process.env.USER_ROLE)
+    } else if (roleName === process.env.USER_ROLE) {
       return res
         .status(200)
         .json(
-          new apiResponse(200, "Permissions found", allRolePermissionsForUser)
+          new apiResponseHandler(
+            200,
+            "Permissions found",
+            allRolePermissionsForUser
+          )
         );
+    }
   } catch (error) {
     return res
       .status(400)
@@ -493,7 +502,9 @@ exports.changePermissionsOfModeratorByAdmin = async (req, res) => {
               )
             );
 
-        return res.status(200).json(new apiResponse(200, "Role updated", role));
+        return res
+          .status(200)
+          .json(new apiResponseHandler(200, "Role updated", role));
       }
     }
     return res
@@ -594,7 +605,7 @@ exports.incrementAndDecrementPersonRoleByAdmin = async (req, res) => {
           )
         );
 
-      // console.log(user)
+    // console.log(user)
     user.role = new mongoose.Types.ObjectId(roleId); //user role updated
     user.permissions = RoleTobeUpdated.permissions; //user permissions updated
     const userAfterSave = await user.save();

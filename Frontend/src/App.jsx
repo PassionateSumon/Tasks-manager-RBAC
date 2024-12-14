@@ -22,6 +22,9 @@ import ModeratorProfile from "./pages/Moderator/ModeratorProfile";
 import ModDashboard from "./pages/Moderator/ModDashboard";
 import UserDetailsWithTasks from "./components/UserDetailsWithTasks";
 import AdminProfile from "./pages/Admin/AdminProfile";
+import ModDetailsWithTasks from "./components/ModDetailsWithTasks";
+import PermissionManagement from "./pages/Admin/PermissionManagement";
+import UserManagementMod from "./pages/Moderator/UserManagementMod";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -81,6 +84,7 @@ const App = () => {
       >
         <Route path="admin-dashboard" element={<AdminDashboard />} />
         <Route path="tasks" element={<AdminTask />} />
+        <Route path="permissions" element={<PermissionManagement />} />
         <Route path="admin-control-users" element={<UserManagement />} />
         <Route path="profile" element={<AdminProfile />} />
         <Route
@@ -91,7 +95,11 @@ const App = () => {
           path="admin-control-moderators"
           element={<ModeratorManagement />}
         />
-        
+        <Route
+          path="admin-control-moderators/:modId"
+          element={<ModDetailsWithTasks />}
+        />
+
         <Route path="admin-control-roles" element={<RoleManagement />} />
       </Route>
 
@@ -125,6 +133,11 @@ const App = () => {
         <Route path="tasks" element={<ModeratorTask />} />
         <Route path="profile" element={<ModeratorProfile />} />
         <Route path="moderator-dashboard" element={<ModDashboard />} />
+        <Route path="moderator-control-users" element={<UserManagementMod />} />
+        <Route
+          path="moderator-control-users/:userId"
+          element={<UserDetailsWithTasks />}
+        />
       </Route>
     </Routes>
   );
