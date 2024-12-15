@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { CiLight } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
+import Loading from "./Loading";
 
 const Profile = ({ onUpdateProfile }) => {
   const user = useSelector((state) => state.auth.user);
+  const loading = useSelector((state) => state.auth.loading);
   const [isEditing, setIsEditing] = useState(false);
   const [editableName, setEditableName] = useState(user?.name || "");
   const [editableEmail, setEditableEmail] = useState(user?.email || "");
@@ -17,6 +19,10 @@ const Profile = ({ onUpdateProfile }) => {
         </p>
       </div>
     );
+  }
+
+  if (loading) {
+    return <Loading />;
   }
 
   useEffect(() => {

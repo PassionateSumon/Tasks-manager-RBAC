@@ -26,6 +26,7 @@ import ModDetailsWithTasks from "./components/ModDetailsWithTasks";
 import PermissionManagement from "./pages/Admin/PermissionManagement";
 import UserManagementMod from "./pages/Moderator/UserManagementMod";
 import ProtectedRoute from "./components/protected-route/ProtectedRoute";
+import Loading from "./components/Loading";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -41,7 +42,7 @@ const App = () => {
 
   // Handle loading state
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   return (
