@@ -25,12 +25,13 @@ import AdminProfile from "./pages/Admin/AdminProfile";
 import ModDetailsWithTasks from "./components/ModDetailsWithTasks";
 import PermissionManagement from "./pages/Admin/PermissionManagement";
 import UserManagementMod from "./pages/Moderator/UserManagementMod";
+import ProtectedRoute from "./components/protected-route/ProtectedRoute";
 
 const App = () => {
   const dispatch = useDispatch();
   const { isLoggedIn, role, loading } = useSelector((state) => state.auth);
 
-  // Verify the token on app load if a token exists in cookies
+  // Verify token on app load
   useEffect(() => {
     const token = Cookies.get("token");
     if (token && !isLoggedIn) {
@@ -38,23 +39,9 @@ const App = () => {
     }
   }, [dispatch, isLoggedIn]);
 
-  // Determine the home route based on the user's role
-  const getHomeRoute = (role) => {
-    switch (role) {
-      case "admin":
-        return "/home-admin";
-      case "moderator":
-        return "/home-moderator";
-      case "user":
-        return "/home-user";
-      default:
-        return "/login";
-    }
-  };
-
   // Handle loading state
   if (loading) {
-    return <div>Loading...</div>; // Replace with a spinner or skeleton screen
+    return <div>Loading...</div>;
   }
 
   return (
@@ -63,81 +50,61 @@ const App = () => {
       <Route path="/" element={<Landing />} />
       <Route
         path="/login"
-        element={isLoggedIn ? <Navigate to={getHomeRoute(role)} /> : <Signin />}
+        element={isLoggedIn ? <Navigate to={`/home-${role}`} /> : <Signin />}
       />
       <Route
         path="/signup"
-        element={isLoggedIn ? <Navigate to={getHomeRoute(role)} /> : <Signup />}
+        element={isLoggedIn ? <Navigate to={`/home-${role}`} /> : <Signup />}
       />
 
       {/* Protected Routes */}
-      {/* admin routes */}
-      <Route
-        path="/home-admin"
-        element={
-          isLoggedIn && role === "admin" ? (
-            <AdminLayout />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      >
-        <Route path="admin-dashboard" element={<AdminDashboard />} />
-        <Route path="tasks" element={<AdminTask />} />
-        <Route path="permissions" element={<PermissionManagement />} />
-        <Route path="admin-control-users" element={<UserManagement />} />
-        <Route path="profile" element={<AdminProfile />} />
-        <Route
-          path="admin-control-users/:userId"
-          element={<UserDetailsWithTasks />}
-        />
-        <Route
-          path="admin-control-moderators"
-          element={<ModeratorManagement />}
-        />
-        <Route
-          path="admin-control-moderators/:modId"
-          element={<ModDetailsWithTasks />}
-        />
-
-        <Route path="admin-control-roles" element={<RoleManagement />} />
+      {/* Admin Routes */}
+      <Route element={<ProtectedRoute allowedRole="admin" />}>
+        <Route path="/home-admin" element={<AdminLayout />}>
+          <Route path="admin-dashboard" element={<AdminDashboard />} />
+          <Route path="tasks" element={<AdminTask />} />
+          <Route path="permissions" element={<PermissionManagement />} />
+          <Route path="admin-control-users" element={<UserManagement />} />
+          <Route path="profile" element={<AdminProfile />} />
+          <Route
+            path="admin-control-users/:userId"
+            element={<UserDetailsWithTasks />}
+          />
+          <Route
+            path="admin-control-moderators"
+            element={<ModeratorManagement />}
+          />
+          <Route
+            path="admin-control-moderators/:modId"
+            element={<ModDetailsWithTasks />}
+          />
+          <Route path="admin-control-roles" element={<RoleManagement />} />
+        </Route>
       </Route>
 
-      {/* user routes */}
-      <Route
-        path="/home-user"
-        element={
-          isLoggedIn && role === "user" ? (
-            <UserLayout />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      >
-        <Route path="user-dashboard" element={<UserDashboard />} />
-        <Route path="tasks" element={<UserTask />} />
-        <Route path="profile" element={<UserProfile />} />
+      {/* User Routes */}
+      <Route element={<ProtectedRoute allowedRole="user" />}>
+        <Route path="/home-user" element={<UserLayout />}>
+          <Route path="tasks" element={<UserTask />} />
+          <Route path="profile" element={<UserProfile />} />
+        </Route>
       </Route>
 
-      {/* moderator routes */}
-      <Route
-        path="/home-moderator"
-        element={
-          isLoggedIn && role === "moderator" ? (
-            <ModeratorLayout />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      >
-        <Route path="tasks" element={<ModeratorTask />} />
-        <Route path="profile" element={<ModeratorProfile />} />
-        <Route path="moderator-dashboard" element={<ModDashboard />} />
-        <Route path="moderator-control-users" element={<UserManagementMod />} />
-        <Route
-          path="moderator-control-users/:userId"
-          element={<UserDetailsWithTasks />}
-        />
+      {/* Moderator Routes */}
+      <Route element={<ProtectedRoute allowedRole="moderator" />}>
+        <Route path="/home-moderator" element={<ModeratorLayout />}>
+          <Route path="tasks" element={<ModeratorTask />} />
+          <Route path="profile" element={<ModeratorProfile />} />
+          <Route path="moderator-dashboard" element={<ModDashboard />} />
+          <Route
+            path="moderator-control-users"
+            element={<UserManagementMod />}
+          />
+          <Route
+            path="moderator-control-users/:userId"
+            element={<UserDetailsWithTasks />}
+          />
+        </Route>
       </Route>
     </Routes>
   );

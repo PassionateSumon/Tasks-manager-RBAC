@@ -57,11 +57,6 @@ const Sidebar = () => {
     ],
     user: [
       {
-        name: "Dashboard",
-        path: "user-dashboard",
-        icon: <FiHome className="text-xl" />,
-      },
-      {
         name: "Tasks",
         path: "tasks",
         icon: <MdOutlineTaskAlt className="text-xl" />,
