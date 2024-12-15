@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom'
 import { logout } from '../../redux/slices/authSlice';
 import Sidebar from '../../components/Sidebar';
@@ -8,6 +8,7 @@ import Navbar from '../../components/Navbar';
 const ModeratorLayout = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+  
     function handleClick() {
       dispatch(logout());
       navigate("/login");

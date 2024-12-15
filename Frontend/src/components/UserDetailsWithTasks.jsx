@@ -66,8 +66,8 @@ const UserDetailsWithTasks = () => {
           <p className="text-[#E6E1FF]">Role: {user.roles?.[0]?.name}</p>
           <h2 className="text-xl font-bold mt-6 mb-4 text-[#E6E1FF]">Tasks</h2>
           <ul>
-            {tasks.length > 0 ? (
-              tasks.map((task) => (
+            {tasks?.length > 0 ? (
+              tasks?.map((task) => (
                 <li
                   key={task?._id}
                   className="bg-[#1E1B29] p-4 rounded-lg mb-2 flex justify-between items-center cursor-pointer "

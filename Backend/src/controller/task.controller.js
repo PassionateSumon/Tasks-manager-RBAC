@@ -393,6 +393,7 @@ exports.getTasksOfUser = async (req, res) => {
     const userId = req?.params?.id;
     const loggedInPersonId = req?.user.id;
     const role = req?.role;
+    // console.log(role);
     if (!loggedInPersonId)
       return res.status(400).json(new apiErrorHandler(400, "Unauthorized"));
     if (!role)

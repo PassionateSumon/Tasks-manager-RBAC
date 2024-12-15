@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 const initialState = {
   loading: false,
   error: "",
-  updated_mods: [],
+  mods: [],
   users: [],
   tasks: [],
   userCount: 0,
@@ -19,28 +19,6 @@ export const createModerator = createAsyncThunk(
       const apiRes = await useApi("moderator/api/signup", "POST", {
         body: JSON.stringify(data),
       });
-      return apiRes;
-    } catch (error) {
-      return rejectWithValue(error);
-    }
-  }
-);
-export const updateModeratorProfile = createAsyncThunk(
-  "moderator/update-pro",
-  async (data, { rejectWithValue }) => {
-    try {
-      const apiRes = await useApi(
-        `moderator/api/update-pro/${data._id}/${
-          import.meta.env.VITE_PROFILE_UPDATE
-        }`,
-        "PUT",
-        {
-          body: JSON.stringify(data),
-          headers: {
-            Authorization: data.token,
-          },
-        }
-      );
       return apiRes;
     } catch (error) {
       return rejectWithValue(error);
@@ -92,37 +70,17 @@ export const deleteUser = createAsyncThunk(
     }
   }
 );
-export const upgradeUserToAny = createAsyncThunk(
-  "admin/upgrade-user-to-mod",
-  async ({ u_id, r_id }, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/admin/api/update-person-role-by-admin/${u_id}/${
-          import.meta.env.VITE_ROLE_UPDATE
-        }`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: Cookies.get("token"),
-          },
-          credentials: "include",
-          body: JSON.stringify({ roleId: r_id }),
-        }
-      );
-      const res = await response.json();
-      return res;
-    } catch (error) {
-      return rejectWithValue(error);
-    }
-  }
-);
-
 
 const moderatorSlice = createSlice({
   name: "moderator",
   initialState,
-  reducers: {},
+  reducers: {
+    removeUser: (state, action) => {
+      state.users = state.users.filter(
+        (user) => user._id !== action.payload.id
+      );
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createModerator.pending, (state) => {
@@ -138,22 +96,6 @@ const moderatorSlice = createSlice({
         }
       })
       .addCase(createModerator.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "An error occurred.";
-      })
-      .addCase(updateModeratorProfile.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(updateModeratorProfile.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload.code > 300) {
-          state.error = action?.payload?.message;
-        } else {
-          state.updated_moderator = action?.payload?.data;
-          state.error = "";
-        }
-      })
-      .addCase(updateModeratorProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "An error occurred.";
       })
@@ -195,4 +137,5 @@ const moderatorSlice = createSlice({
   },
 });
 
+export const { removeUser } = moderatorSlice.actions; 
 export default moderatorSlice;

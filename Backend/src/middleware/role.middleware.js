@@ -63,7 +63,8 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
       },
     ]);
     // console.log(requestedPersonRole)
-    const requestedPersonRoleName = requestedPersonRole?.[0]?.userRole?.[0]?.name;
+    const requestedPersonRoleName =
+      requestedPersonRole?.[0]?.userRole?.[0]?.name;
     // console.log(requestedPersonRoleName);
 
     switch (currUserWithRoleName) {
@@ -153,17 +154,17 @@ exports.verifyRoleAndPermission = async (req, res, next) => {
 
           let flag = true;
           adminPermissions[0]?.userPermissions?.forEach((permission) => {
-            if (Object.keys(permission).includes(decodedActionType)) {
-              if (flag === true) {
+            if (flag === true) {
+              if (Object.keys(permission).includes(decodedActionType)) {
                 if (permission[decodedActionType].includes(decodedAction)) {
                   req.role = currUserWithRole[0];
                   flag = false;
                 } else {
                   req.role = null;
                 }
+              } else {
+                req.role = null;
               }
-            } else {
-              req.role = null;
             }
           });
         }

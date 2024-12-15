@@ -73,6 +73,32 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
+export const updateModeratorProfile = createAsyncThunk(
+  "moderator/update-pro",
+  async ({ data, id }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/moderator/api/update-pro/${id}/${
+          import.meta.env.VITE_PROFILE_UPDATE
+        }`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: Cookies.get("token"),
+          },
+          credentials: "include",
+          body: JSON.stringify(data),
+        }
+      );
+      const res = await response.json();
+      return res;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,

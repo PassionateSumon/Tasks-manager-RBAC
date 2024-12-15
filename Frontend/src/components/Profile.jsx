@@ -37,8 +37,6 @@ const Profile = ({ onUpdateProfile }) => {
     setIsEditing(false);
   };
 
-  console.log(user);
-
   return (
     <div className="bg-[#2A2739] text-[#E6E1FF] shadow-[0_2px_0px_rgba(245,66,152,0.3)] p-8 rounded-lg max-w-lg mx-auto space-y-6">
       <div className="text-center">
